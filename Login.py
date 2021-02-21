@@ -1,5 +1,6 @@
 from tkinter import *
 import sqlite3
+import re
 
 class Menu:
     def yo():
@@ -12,42 +13,83 @@ class LoginSystem:
         self.master = master
         self.password = password
     
-    @staticmethod
-    def createAccount():
-        create = Toplevel()
-        create.geometry("250x310")
-        title = Label(create, text="Create Account\n", font=("Arial", 20))
+    def createAccount(self, Email, Pass, Pass2, createRoot):
+        if re.search(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', Email.get()):
+            password_validator = [
+                (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get())
+                (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get())
+                (lambda x: True if any(i.isupper() for i in x) else False)(Pass2.get())
+                (lambda x: True if any(i.isdigit() for i in x) else False)(Pass2.get())
+            ]
+            if all(condition == True for condition in password_validator):
+                if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7:
+                    if Pass2.get() == Pass.get():
+                        print("Success")
+                        createRoot.destroy()
+                    else:
+                        print("Passwords dont match")
+                else:
+                    print("Password is too short or doesnt have special characters")
+            else:
+                print(False)
+        else:
+            print("Bad email")
 
-        Label(create, text="       ").grid(row=0, column=0)
+
+    def createAccLayout(self):
+        create = Toplevel()
+        create.geometry("295x310") # Setting window size for create account page.
+        title = Label(create, text="\nCreate Account\n", font=("Arial", 20))
+
+        new_email = Entry(create, width=40)
+        new_email.grid(row=3, column=5)
+
+        new_pass = Entry(create, width=40)
+        new_pass.grid(row=5, column=5)
+
+        new_pass2 = Entry(create, width=40)
+        new_pass2.grid(row=7, column=5)
+        
         title.grid(row=0, column=5)
+
+        createAcc = Button(create, text="Create Account", command=lambda: self.createAccount(new_email, new_pass, new_pass2, create))
+        createAcc.grid(row=8, column=5, pady=10)
+
+        """
+            Code for creating the layout of the create account page. 
+            E.g. Email entry, pass entry etc.
+            Assiging rows and columns to each entry.
+        """
+
+        Label(create, text="Email").grid(row=2, column=5)
+        Label(create, text="Password").grid(row=4, column=5)
+        Label(create, text="Re-Enter pass").grid(row=6, column=5)
+        Label(create, text="       ").grid(row=0, column=0)
 
 
     def loginPress(self, Email, Pass, Master):
         try:
             connect = sqlite3.connect("Details.db")
             csr = connect.cursor()
-        except ConnectionError as error:
+        except ConnectionError as error: # Throw exception if user is unable to connect to database.
             return f"ERROR {error}"
             exit()
 
-        csr.execute("SELECT * FROM Details")
-        data = csr.fetchall()
+        csr.execute("SELECT * FROM Details") # Grabs all of the data from the db.
+        data = csr.fetchall() # Stored tuples of data in db in variable.
 
         for i in data:
-            if i[0] == Email.get() and i[1] == Pass.get():
+            if i[0] == Email.get() and i[1] == Pass.get(): # Checking if details exist or not.
                 root.destroy()
                 Menu.yo()
-        
-        Email.delete(0, END)
-        Pass.delete(0, END)
-
+                                              
+        Email.delete(0, END) # Make entries blank when login button is pressed.
+        Pass.delete(0, END) 
+          
         incorrect = Label(Master, text="Email or Password is incorrect. Try Again.")
         incorrect.grid(row=4, column=5)
 
-        createAcc = Button(Master, text="Create Account", command=lambda: LoginSystem.createAccount())
-        createAcc.grid(row=5, column=5, padx=20, pady=10)
-
-        connect.commit()
+        connect.commit() # Committing changes to database and closing the connection.
         connect.close()
 
 
@@ -57,19 +99,23 @@ class LoginSystem:
         self.password = Entry(self.master, width=40)
         
         loginButton = Button(self.master, text="Login", command=lambda: self.loginPress(self.email, self.password, self.master))
-
+        # Calling function loginPress when user has entered their details.
+        createAcc = Button(self.master, text="Create Account", command=lambda: self.createAccLayout()) 
+        # Calling createAccLayout function.
 
         Label(self.master, text="\nEmail: \n").grid(row=1, column=0)
         Label(self.master, text="\nPassword: \n").grid(row=2, column=0)
+
         title.grid(row=0, column=5)
-        self.email.grid(row=1, column=5)
+        self.email.grid(row=1, column=5) # Layout of the login page.
         self.password.grid(row=2, column=5)
         loginButton.grid(row=3, column=5, pady=10)
+        createAcc.grid(row=5, column=5, padx=20, pady=10)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": # Checking if program is in main before running code.
     root = Tk()
-    root.geometry("350x330")
+    root.geometry("350x330") # Setting size of the window.
 
     login = LoginSystem(root)
     login.layout()

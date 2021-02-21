@@ -33,7 +33,4 @@
 - Tkinter
 - SQLite3
 
-### Socials:
-[twitter]: https://twitter.com/Tarrin37925904
-[YouTube]: https://www.youtube.com/channel/UCiTYa3K4deasNIzktJBnapw
-[GitHub]: https://github.com/Tarrin376
+--- [![Tarrin376's GitHub stats](https://github-readme-stats.vercel.app/api?username=Tarrin376)](https://github.com/Tarrin376/github-readme-stats)

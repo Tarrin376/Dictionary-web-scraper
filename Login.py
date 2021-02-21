@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 import sqlite3
 import re
 
@@ -16,24 +17,28 @@ class LoginSystem:
     def createAccount(self, Email, Pass, Pass2, createRoot):
         if re.search(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', Email.get()):
             password_validator = [
-                (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get())
-                (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get())
-                (lambda x: True if any(i.isupper() for i in x) else False)(Pass2.get())
+                (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()),
+                (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get()),
+                (lambda x: True if any(i.isupper() for i in x) else False)(Pass2.get()),
                 (lambda x: True if any(i.isdigit() for i in x) else False)(Pass2.get())
             ]
             if all(condition == True for condition in password_validator):
                 if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7:
                     if Pass2.get() == Pass.get():
-                        print("Success")
                         createRoot.destroy()
                     else:
-                        print("Passwords dont match")
+                        Label(createRoot, text="Warning!").grid(row=9, column=5)
+                        Label(createRoot, text="Passwords do not match").grid(row=10, column=5)
                 else:
-                    print("Password is too short or doesnt have special characters")
+                    Label(createRoot, text="Warning!").grid(row=9, column=5)
+                    Label(createRoot, 
+                        text="Password length needs to be more than 7 and needs to contain special character"
+                    ).grid(row=10, column=5)
             else:
-                print(False)
+                Label(createRoot, text="Warning!").grid(row=9, column=5)
+                Label(createRoot, text="Uppercase and numbers needed").grid(row=10, column=5)
         else:
-            print("Bad email")
+            messagebox.showwarning("Warning!", "Invalid Email")
 
 
     def createAccLayout(self):
@@ -86,8 +91,7 @@ class LoginSystem:
         Email.delete(0, END) # Make entries blank when login button is pressed.
         Pass.delete(0, END) 
           
-        incorrect = Label(Master, text="Email or Password is incorrect. Try Again.")
-        incorrect.grid(row=4, column=5)
+        messagebox.showwarning("Warning!", "Email or password is incorrect!")
 
         connect.commit() # Committing changes to database and closing the connection.
         connect.close()

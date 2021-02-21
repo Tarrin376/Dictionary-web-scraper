@@ -4,7 +4,6 @@
 - :technologist: I'm currently doing a computing course at college.
 - :video_game: I like to play games in my spare time.
 
-<br />
 
 ### Languages and Tools that i use:
 

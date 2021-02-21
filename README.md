@@ -32,3 +32,8 @@
 ### Libraries that are being used (ATM):
 - Tkinter
 - SQLite3
+
+### Socials:
+[twitter]: https://twitter.com/Tarrin37925904
+[YouTube]: https://www.youtube.com/channel/UCiTYa3K4deasNIzktJBnapw
+[GitHub]: https://github.com/Tarrin376

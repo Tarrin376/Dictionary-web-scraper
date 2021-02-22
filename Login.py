@@ -2,10 +2,24 @@ from tkinter import *
 from tkinter import messagebox
 import sqlite3
 import re
+from copy import copy
 
-class Menu:
-    def yo():
-        print("hi2")
+class Menu(object):
+    def yo(Email, password, createRoot):
+        new = Toplevel(createRoot)
+        new.geometry("700x500")
+        new.title("Menu")
+
+        email_data = Label(new, text=f"Logged in as: {Email}", font=("Arial", 12))
+        email_data.grid(row=0, column=0)
+
+        logout = Button(new, text="LOG OUT", command=lambda: logout(Email))
+        logout.grid(row=1, column=0)
+
+        def logout(email):
+            message = Label(new, text=f"Logging out {email}...")
+            message.grid(row=2, column=0)
+            new.destroy()
 
 
 class LoginSystem:
@@ -13,9 +27,10 @@ class LoginSystem:
         self.email = email
         self.master = master
         self.password = password
+        self.title = self.master.title("Login")
     
     def createAccount(self, Email, Pass, Pass2, createRoot):
-        if re.search(r'^[a-z0-9]+[\._]?[a-z0-9]+[@]\w+[.]\w{2,3}$', Email.get()):
+        if re.search(r'^[a-zA-|0-9]+[\._]?[a-zA-Z0-9]+[@]\w+[.]\w{2,3}$', Email.get()):
             password_validator = [
                 (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()),
                 (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get()),
@@ -25,7 +40,15 @@ class LoginSystem:
             if all(condition == True for condition in password_validator):
                 if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7:
                     if Pass2.get() == Pass.get():
-                        createRoot.destroy()
+                        try:
+                            connect = sqlite3.connect("Details.db")
+                            csr = connect.cursor()
+                            csr.execute("INSERT INTO Details VALUES (?, ?)", (Email.get(), Pass.get()))
+                            connect.commit() # Committing changes to database and closing the connection.
+                            connect.close()
+                            createRoot.destroy()
+                        except ConnectionError as error:
+                            return f"ERROR {error}"
                     else:
                         Label(createRoot, text="Warning!").grid(row=9, column=5)
                         Label(createRoot, text="Passwords do not match").grid(row=10, column=5)
@@ -36,13 +59,14 @@ class LoginSystem:
                     ).grid(row=10, column=5)
             else:
                 Label(createRoot, text="Warning!").grid(row=9, column=5)
-                Label(createRoot, text="Uppercase and numbers needed").grid(row=10, column=5)
+                Label(createRoot, text="Uppercase characters and numbers needed").grid(row=10, column=5)
         else:
             messagebox.showwarning("Warning!", "Invalid Email")
 
 
     def createAccLayout(self):
         create = Toplevel()
+        create.title("Create Account")
         create.geometry("295x310") # Setting window size for create account page.
         title = Label(create, text="\nCreate Account\n", font=("Arial", 20))
 
@@ -84,10 +108,14 @@ class LoginSystem:
         data = csr.fetchall() # Stored tuples of data in db in variable.
 
         for i in data:
+            print(i)
             if i[0] == Email.get() and i[1] == Pass.get(): # Checking if details exist or not.
-                root.destroy()
-                Menu.yo()
-                                              
+                loggedEmail = copy(Email.get())
+                Email.delete(0, END)
+                Pass.delete(0, END) 
+                menu = Menu.yo(loggedEmail, Pass, Master)
+                return
+                                             
         Email.delete(0, END) # Make entries blank when login button is pressed.
         Pass.delete(0, END) 
           

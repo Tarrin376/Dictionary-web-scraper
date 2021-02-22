@@ -57,9 +57,7 @@ class LoginSystem:
 
             password_validator = [
                 (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()),
-                (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get()),
-                (lambda x: True if any(i.isupper() for i in x) else False)(Pass2.get()),
-                (lambda x: True if any(i.isdigit() for i in x) else False)(Pass2.get())
+                (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get())
             ] # Lambda expressions to check if passwords meet the conditions.
 
             if all(condition == True for condition in password_validator):

@@ -32,5 +32,7 @@
 ### Libraries that are being used (ATM):
 - Tkinter
 - SQLite3
+- re - (Regular Expressions)
+- copy
 
 [![Tarrin376's GitHub stats](https://github-readme-stats.vercel.app/api?username=Tarrin376&theme=radical)](https://github.com/Tarrin376/github-readme-stats)

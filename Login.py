@@ -4,26 +4,49 @@ import sqlite3
 import re
 from copy import copy
 
-class Menu(object):
-    def yo(Email, password, createRoot):
-        new = Toplevel(createRoot)
-        new.geometry("700x500")
-        new.title("Menu")
 
-        email_data = Label(new, text=f"Logged in as: {Email}", font=("Arial", 12))
-        email_data.grid(row=0, column=0)
+class Menu(object): # Main menu of GUI class.
+    def settings():
+        global window
+        window = Toplevel() # Opens new window when settings button is clicked.
+        window.geometry("300x220") # Size of window.
 
-        logout = Button(new, text="LOG OUT", command=lambda: logout(Email))
+    def menuLayout(Email, password, createRoot):
+        menu = Toplevel(createRoot)
+        menu.geometry("690x500") # Size of window.
+        menu.title("Menu")
+
+        logout = Button(menu, text="LOG OUT", command=lambda: logout(Email)) # Calling logout function.
         logout.grid(row=1, column=0)
 
         def logout(email):
-            message = Label(new, text=f"Logging out {email}...")
+            global window
+            message = Label(menu, text=f"Logging out {email}...")
             message.grid(row=2, column=0)
-            new.destroy()
+            menu.destroy() # Closes the main menu window.
+            window.destroy() # Closes the settings window if open.
+
+        email_data = Label(menu, text=f"Logged in as: {Email}", font=("Arial", 12))
+        email_data.grid(row=0, column=0)
+    
+        welcome = Label(menu, text="Welcome!", font=("Arial", 25))
+        welcome.grid(row=2, column=4)
+
+        subheading = Label(menu, text="Chose an option below:", font=("Arial", 15))
+        subheading.grid(row=3, column=4)
+
+        settings = Button(menu, text="Settings", command=lambda: Menu.settings())
+        settings.grid(row=1, column=5)
+
+        Label(menu, text="                                                                     ").grid(row=2, column=5)
+
+        """
+        Gridding layout for the titles and entries.
+        """
 
 
 class LoginSystem:
-    def __init__(self, master, email=None, password=None):
+    def __init__(self, master, email=None, password=None): # Class attributes needed for login system.
         self.email = email
         self.master = master
         self.password = password
@@ -31,27 +54,29 @@ class LoginSystem:
     
     def createAccount(self, Email, Pass, Pass2, createRoot):
         if re.search(r'^[a-zA-|0-9]+[\._]?[a-zA-Z0-9]+[@]\w+[.]\w{2,3}$', Email.get()):
+
             password_validator = [
                 (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()),
                 (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get()),
                 (lambda x: True if any(i.isupper() for i in x) else False)(Pass2.get()),
                 (lambda x: True if any(i.isdigit() for i in x) else False)(Pass2.get())
-            ]
+            ] # Lambda expressions to check if passwords meet the conditions.
+
             if all(condition == True for condition in password_validator):
-                if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7:
-                    if Pass2.get() == Pass.get():
+                if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7: # Using email regular expression to check validity of email.
+                    if Pass2.get() == Pass.get(): # Making sure that the re-entered password matches the original.
                         try:
                             connect = sqlite3.connect("Details.db")
                             csr = connect.cursor()
-                            csr.execute("INSERT INTO Details VALUES (?, ?)", (Email.get(), Pass.get()))
+                            csr.execute("INSERT INTO Details VALUES (?, ?)", (Email.get(), Pass.get())) # Adding new email and password to database.
                             connect.commit() # Committing changes to database and closing the connection.
-                            connect.close()
+                            connect.close() # Closing the connection.
                             createRoot.destroy()
                         except ConnectionError as error:
                             return f"ERROR {error}"
                     else:
                         Label(createRoot, text="Warning!").grid(row=9, column=5)
-                        Label(createRoot, text="Passwords do not match").grid(row=10, column=5)
+                        Label(createRoot, text="Passwords do not match").grid(row=10, column=5) # If passwords dont match.
                 else:
                     Label(createRoot, text="Warning!").grid(row=9, column=5)
                     Label(createRoot, 
@@ -61,7 +86,7 @@ class LoginSystem:
                 Label(createRoot, text="Warning!").grid(row=9, column=5)
                 Label(createRoot, text="Uppercase characters and numbers needed").grid(row=10, column=5)
         else:
-            messagebox.showwarning("Warning!", "Invalid Email")
+            messagebox.showwarning("Warning!", "Invalid Email") # Warning box if the email does not match the regex expression.
 
 
     def createAccLayout(self):
@@ -98,7 +123,7 @@ class LoginSystem:
 
     def loginPress(self, Email, Pass, Master):
         try:
-            connect = sqlite3.connect("Details.db")
+            connect = sqlite3.connect("Details.db") # Connecting to SQLite3 database.
             csr = connect.cursor()
         except ConnectionError as error: # Throw exception if user is unable to connect to database.
             return f"ERROR {error}"
@@ -108,12 +133,11 @@ class LoginSystem:
         data = csr.fetchall() # Stored tuples of data in db in variable.
 
         for i in data:
-            print(i)
             if i[0] == Email.get() and i[1] == Pass.get(): # Checking if details exist or not.
                 loggedEmail = copy(Email.get())
                 Email.delete(0, END)
                 Pass.delete(0, END) 
-                menu = Menu.yo(loggedEmail, Pass, Master)
+                menu = Menu.menuLayout(loggedEmail, Pass, Master)
                 return
                                              
         Email.delete(0, END) # Make entries blank when login button is pressed.

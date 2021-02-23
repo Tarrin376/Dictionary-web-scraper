@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 import sqlite3
 import re
 from copy import copy
@@ -21,13 +21,24 @@ class Menu(object): # Main menu of GUI class.
 
     def menuLayout(Email, password, createRoot):
         menu = Toplevel(createRoot)
-        menu.geometry("690x500") # Size of window.
+        menu.geometry("1200x600") # Size of window.
         menu.title("Menu")
         menu.configure(background='#D7D4D4')
 
-        logout = Button(menu, text="LOG OUT", command=lambda: logout(Email), bg='#91F3E9') # Calling logout function.
+        logout = Button(menu, text="LOG OUT", command=lambda: logout(Email), font=("Arial", 8, 'bold'), bg='#959292', fg="white") # Calling logout function.
         logout.grid(row=1, column=0)
 
+        email_data = Label(menu, text=f"Logged in as: {Email}", font=("Arial", 12))
+        welcome = Label(menu, text="Welcome!", font=("Arial", 25))
+        subheading = Label(menu, text="Chose an option below:\n\n\n\n\n", font=("Arial", 15))
+        Label(menu, text="              ").grid(row=3, column=3)
+        Label(menu, text="              ").grid(row=3, column=5)
+        Label(menu, text="              ").grid(row=5, column=4)
+        settings = Button(menu, text="Settings", command=lambda: Menu.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", fg="white")
+        calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", fg="white")
+        toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", fg="white")
+        dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", fg="white")
+        
 
         def logout(email):
             global window
@@ -35,16 +46,15 @@ class Menu(object): # Main menu of GUI class.
             if "window" == root.state():
                 window.destroy() # Closes the settings window if open.
 
-
-        email_data = Label(menu, text=f"Logged in as: {Email}", font=("Arial", 12))
-        welcome = Label(menu, text="Welcome!", font=("Arial", 25))
-        subheading = Label(menu, text="Chose an option below:", font=("Arial", 15))
-        settings = Button(menu, text="Settings", command=lambda: Menu.settings(), bg='#91F3E9')
-
+        
         email_data.grid(row=0, column=0)
         welcome.grid(row=2, column=4)
         subheading.grid(row=3, column=4)
-        settings.grid(row=2, column=0, pady=5)
+        settings.grid(row=6, column=4)
+        calculator.grid(row=4, column=2)
+        toDoList.grid(row=4, column=4)
+        dictionary.grid(row=4, column=6)
+        
 
         """
         Gridding layout for the titles and entries.
@@ -152,9 +162,9 @@ class LoginSystem:
         self.email = Entry(self.master, width=40)
         self.password = Entry(self.master, width=40)
         
-        loginButton = Button(self.master, text="Login", command=lambda: self.loginPress(self.email, self.password, self.master), bg='#91F3E9')
+        loginButton = Button(self.master, text="Login", command=lambda: self.loginPress(self.email, self.password, self.master), font=("Arial", 8, 'bold'), bg='#959292', fg="white")
         # Calling function loginPress when user has entered their details.
-        createAcc = Button(self.master, text="Create Account", command=lambda: self.createAccLayout(), bg='#91F3E9')
+        createAcc = Button(self.master, text="Create Account", command=lambda: self.createAccLayout(), font=("Arial", 8, 'bold'), bg='#959292', fg="white")
         # Calling createAccLayout function.
 
         text1 = Label(self.master, text="\nEmail: \n", font=("Roboto Medium", 12))

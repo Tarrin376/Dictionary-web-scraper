@@ -10,35 +10,41 @@ class Menu(object): # Main menu of GUI class.
         global window
         window = Toplevel() # Opens new window when settings button is clicked.
         window.geometry("300x220") # Size of window.
+        window.configure(background='#D7D4D4')
+        window.title("Settings")
+        
+        title = Label(window, text="Settings", font=("Arial", 20))
+  
+
+        title.grid(row=1, column=5)
+    
 
     def menuLayout(Email, password, createRoot):
         menu = Toplevel(createRoot)
         menu.geometry("690x500") # Size of window.
         menu.title("Menu")
+        menu.configure(background='#D7D4D4')
 
-        logout = Button(menu, text="LOG OUT", command=lambda: logout(Email)) # Calling logout function.
+        logout = Button(menu, text="LOG OUT", command=lambda: logout(Email), bg='#91F3E9') # Calling logout function.
         logout.grid(row=1, column=0)
+
 
         def logout(email):
             global window
-            message = Label(menu, text=f"Logging out {email}...")
-            message.grid(row=2, column=0)
             menu.destroy() # Closes the main menu window.
-            window.destroy() # Closes the settings window if open.
+            if "window" == root.state():
+                window.destroy() # Closes the settings window if open.
+
 
         email_data = Label(menu, text=f"Logged in as: {Email}", font=("Arial", 12))
-        email_data.grid(row=0, column=0)
-    
         welcome = Label(menu, text="Welcome!", font=("Arial", 25))
-        welcome.grid(row=2, column=4)
-
         subheading = Label(menu, text="Chose an option below:", font=("Arial", 15))
+        settings = Button(menu, text="Settings", command=lambda: Menu.settings(), bg='#91F3E9')
+
+        email_data.grid(row=0, column=0)
+        welcome.grid(row=2, column=4)
         subheading.grid(row=3, column=4)
-
-        settings = Button(menu, text="Settings", command=lambda: Menu.settings())
-        settings.grid(row=1, column=5)
-
-        Label(menu, text="                                                                     ").grid(row=2, column=5)
+        settings.grid(row=2, column=0, pady=5)
 
         """
         Gridding layout for the titles and entries.
@@ -73,15 +79,12 @@ class LoginSystem:
                         except ConnectionError as error:
                             return f"ERROR {error}"
                     else:
-                        Label(createRoot, text="Warning!").grid(row=9, column=5)
                         Label(createRoot, text="Passwords do not match").grid(row=10, column=5) # If passwords dont match.
                 else:
-                    Label(createRoot, text="Warning!").grid(row=9, column=5)
                     Label(createRoot, 
-                        text="Password length needs to be more than 7 and needs to contain special character"
+                        text="Need one special character & length > 7"
                     ).grid(row=10, column=5)
             else:
-                Label(createRoot, text="Warning!").grid(row=9, column=5)
                 Label(createRoot, text="Uppercase characters and numbers needed").grid(row=10, column=5)
         else:
             messagebox.showwarning("Warning!", "Invalid Email") # Warning box if the email does not match the regex expression.
@@ -91,20 +94,17 @@ class LoginSystem:
         create = Toplevel()
         create.title("Create Account")
         create.geometry("295x310") # Setting window size for create account page.
+
         title = Label(create, text="\nCreate Account\n", font=("Arial", 20))
-
         new_email = Entry(create, width=40)
-        new_email.grid(row=3, column=5)
-
         new_pass = Entry(create, width=40)
-        new_pass.grid(row=5, column=5)
-
         new_pass2 = Entry(create, width=40)
-        new_pass2.grid(row=7, column=5)
+        createAcc = Button(create, text="Create Account", command=lambda: self.createAccount(new_email, new_pass, new_pass2, create), bg='#74F3D1')
         
         title.grid(row=0, column=5)
-
-        createAcc = Button(create, text="Create Account", command=lambda: self.createAccount(new_email, new_pass, new_pass2, create))
+        new_email.grid(row=3, column=5)
+        new_pass.grid(row=5, column=5)
+        new_pass2.grid(row=7, column=5)
         createAcc.grid(row=8, column=5, pady=10)
 
         """
@@ -152,24 +152,26 @@ class LoginSystem:
         self.email = Entry(self.master, width=40)
         self.password = Entry(self.master, width=40)
         
-        loginButton = Button(self.master, text="Login", command=lambda: self.loginPress(self.email, self.password, self.master))
+        loginButton = Button(self.master, text="Login", command=lambda: self.loginPress(self.email, self.password, self.master), bg='#91F3E9')
         # Calling function loginPress when user has entered their details.
-        createAcc = Button(self.master, text="Create Account", command=lambda: self.createAccLayout()) 
+        createAcc = Button(self.master, text="Create Account", command=lambda: self.createAccLayout(), bg='#91F3E9')
         # Calling createAccLayout function.
 
-        Label(self.master, text="\nEmail: \n").grid(row=1, column=0)
-        Label(self.master, text="\nPassword: \n").grid(row=2, column=0)
+        text1 = Label(self.master, text="\nEmail: \n", font=("Roboto Medium", 12))
+        text2 = Label(self.master, text="\nPassword: \n", font=("Roboto Medium", 12))
 
         title.grid(row=0, column=5)
         self.email.grid(row=1, column=5) # Layout of the login page.
         self.password.grid(row=2, column=5)
         loginButton.grid(row=3, column=5, pady=10)
         createAcc.grid(row=5, column=5, padx=20, pady=10)
+        text1.grid(row=1, column=0)
+        text2.grid(row=2, column=0)
 
 
 if __name__ == "__main__": # Checking if program is in main before running code.
     root = Tk()
-    root.geometry("350x330") # Setting size of the window.
+    root.geometry("370x330") # Setting size of the window.
 
     login = LoginSystem(root)
     login.layout()

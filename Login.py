@@ -5,8 +5,14 @@ import re
 from copy import copy
 
 
-class Menu(object): # Main menu of GUI class.
-    def settings():
+class Menu: # Main menu of GUI class.
+    def __init__(self, calculator=None, toDoList=None, dictionary=None): # Class Attributes needed for the Menu.
+        self.calcualtor = calculator
+        self.toDoList = toDoList
+        self.dictionary = dictionary
+
+
+    def settings(self):
         global window
         window = Toplevel() # Opens new window when settings button is clicked.
         window.geometry("300x220") # Size of window.
@@ -14,18 +20,16 @@ class Menu(object): # Main menu of GUI class.
         window.title("Settings")
         
         title = Label(window, text="Settings", font=("Arial", 20))
-  
-
         title.grid(row=1, column=5)
     
 
-    def menuLayout(Email, password, createRoot):
-        menu = Toplevel(createRoot)
-        menu.geometry("1200x600") # Size of window.
+    def menuLayout(self, Email, password):
+        menu = Toplevel()
+        menu.geometry("1200x630") # Size of window.
         menu.title("Menu")
         menu.configure(background='#D7D4D4')
 
-        logout = Button(menu, text="LOG OUT", command=lambda: logout(Email), font=("Arial", 8, 'bold'), bg='#959292', fg="white") # Calling logout function.
+        logout = Button(menu, text="LOG OUT", command=lambda: logout_user(Email), font=("Arial", 8, 'bold'), bg='#959292', fg="white") # Calling logout function.
         logout.grid(row=1, column=0)
 
         email_data = Label(menu, text=f"Logged in as: {Email}", font=("Arial", 12))
@@ -34,31 +38,43 @@ class Menu(object): # Main menu of GUI class.
         Label(menu, text="              ").grid(row=3, column=3)
         Label(menu, text="              ").grid(row=3, column=5)
         Label(menu, text="              ").grid(row=5, column=4)
-        settings = Button(menu, text="Settings", command=lambda: Menu.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", fg="white")
-        calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", fg="white")
-        toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", fg="white")
-        dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", fg="white")
-        
 
-        def logout(email):
-            global window
-            menu.destroy() # Closes the main menu window.
-            if "window" == root.state():
-                window.destroy() # Closes the settings window if open.
+        Sets = Menu()
+        calculator = Calculator() # Assigning calculator variable to Calculator class call so a function can be called from a different class.
+        settings = Button(menu, text="Settings", command=lambda: Sets.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white")
+        self.calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white", command=lambda: calculator.calcLayout())
 
-        
+        self.toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white")
+        self.dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white")
+
         email_data.grid(row=0, column=0)
         welcome.grid(row=2, column=4)
         subheading.grid(row=3, column=4)
         settings.grid(row=6, column=4)
-        calculator.grid(row=4, column=2)
-        toDoList.grid(row=4, column=4)
-        dictionary.grid(row=4, column=6)
-        
+        self.calculator.grid(row=4, column=2)
+        self.toDoList.grid(row=4, column=4)
+        self.dictionary.grid(row=4, column=6)
 
         """
         Gridding layout for the titles and entries.
         """
+
+        def close_logout(window):
+            window.destroy() # Close the logout confirmation message page.
+        
+
+        def logout_user(email):
+            global window
+            menu.destroy() # Closes the main menu window.
+            if "window" == root.state():
+                window.destroy() # Closes the settings window if open.
+            
+            logout = Toplevel()
+            logout.geometry("430x100")
+            Label(logout, text="\t").grid(row=0, column=0)
+            Label(logout, text="\t").grid(row=1, column=0)
+            Label(logout, text="You have successfully logged out!", font=("Arial", 15, 'bold')).grid(row=0, column=1)
+            Button(logout, text="Continue", command=lambda: close_logout(logout)).grid(row=1, column=1)
 
 
 class LoginSystem:
@@ -66,15 +82,15 @@ class LoginSystem:
         self.email = email
         self.master = master
         self.password = password
-        self.title = self.master.title("Login")
+
     
     def createAccount(self, Email, Pass, Pass2, createRoot):
         if re.search(r'^[a-zA-|0-9]+[\._]?[a-zA-Z0-9]+[@]\w+[.]\w{2,3}$', Email.get()):
 
             password_validator = [
-                (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()),
+                (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()), # Lambda expressions to check if passwords meet the conditions.
                 (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get())
-            ] # Lambda expressions to check if passwords meet the conditions.
+            ] 
 
             if all(condition == True for condition in password_validator):
                 if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7: # Using email regular expression to check validity of email.
@@ -107,7 +123,7 @@ class LoginSystem:
 
         title = Label(create, text="\nCreate Account\n", font=("Arial", 20))
         new_email = Entry(create, width=40)
-        new_pass = Entry(create, width=40)
+        new_pass = Entry(create, width=40) # User inputs for creating a new account.
         new_pass2 = Entry(create, width=40)
         createAcc = Button(create, text="Create Account", command=lambda: self.createAccount(new_email, new_pass, new_pass2, create), bg='#74F3D1')
         
@@ -117,16 +133,16 @@ class LoginSystem:
         new_pass2.grid(row=7, column=5)
         createAcc.grid(row=8, column=5, pady=10)
 
+        Label(create, text="Email").grid(row=2, column=5)
+        Label(create, text="Password").grid(row=4, column=5)
+        Label(create, text="Re-Enter pass").grid(row=6, column=5)
+        Label(create, text="       ").grid(row=0, column=0)
+
         """
             Code for creating the layout of the create account page. 
             E.g. Email entry, pass entry etc.
             Assiging rows and columns to each entry.
         """
-
-        Label(create, text="Email").grid(row=2, column=5)
-        Label(create, text="Password").grid(row=4, column=5)
-        Label(create, text="Re-Enter pass").grid(row=6, column=5)
-        Label(create, text="       ").grid(row=0, column=0)
 
 
     def loginPress(self, Email, Pass, Master):
@@ -138,15 +154,16 @@ class LoginSystem:
             exit()
 
         csr.execute("SELECT * FROM Details") # Grabs all of the data from the db.
-        data = csr.fetchall() # Stored tuples of data in db in variable.
+        data = csr.fetchall() # Stored tuples of all the data in db in variable.
 
-        for i in data:
+        for i in data: # Looping through db.
             if i[0] == Email.get() and i[1] == Pass.get(): # Checking if details exist or not.
                 loggedEmail = copy(Email.get())
                 Email.delete(0, END)
-                Pass.delete(0, END) 
-                menu = Menu.menuLayout(loggedEmail, Pass, Master)
-                return
+                Pass.delete(0, END)
+                menu = Menu()
+                menu.menuLayout(loggedEmail, Pass) # Calling menuLayout function in Menu class.
+                return # Prevent code from continuing after function call.
                                              
         Email.delete(0, END) # Make entries blank when login button is pressed.
         Pass.delete(0, END) 
@@ -158,26 +175,53 @@ class LoginSystem:
 
 
     def layout(self):
+        self.master.title("Login")
+        self.master.geometry("450x500")
+
+        self.img1 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\login.png') 
+        self.loginImg = self.img1.subsample(4, 4) 
+        self.img2 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\create.png') 
+
+        """ Images for login and logout buttons """
+
         title = Label(self.master, text="\nSign in\n", font=("Arial", 25))
         self.email = Entry(self.master, width=40)
         self.password = Entry(self.master, width=40)
-        
-        loginButton = Button(self.master, text="Login", command=lambda: self.loginPress(self.email, self.password, self.master), font=("Arial", 8, 'bold'), bg='#959292', fg="white")
-        # Calling function loginPress when user has entered their details.
-        createAcc = Button(self.master, text="Create Account", command=lambda: self.createAccLayout(), font=("Arial", 8, 'bold'), bg='#959292', fg="white")
-        # Calling createAccLayout function.
-
-        text1 = Label(self.master, text="\nEmail: \n", font=("Roboto Medium", 12))
-        text2 = Label(self.master, text="\nPassword: \n", font=("Roboto Medium", 12))
+        loginButton = Button(self.master, image=self.loginImg, command=lambda: self.loginPress(self.email, self.password, self.master), relief=FLAT)
+        createAcc = Button(self.master, image=self.img2, command=lambda: self.createAccLayout(), relief=FLAT)
+        text1 = Label(self.master, text="\nEmail:\n", font=("Roboto Medium", 12))
+        text2 = Label(self.master, text="\nPassword:\n", font=("Roboto Medium", 12))
 
         title.grid(row=0, column=5)
-        self.email.grid(row=1, column=5) # Layout of the login page.
+        self.email.grid(row=1, column=5) 
         self.password.grid(row=2, column=5)
-        loginButton.grid(row=3, column=5, pady=10)
-        createAcc.grid(row=5, column=5, padx=20, pady=10)
+        loginButton.grid(row=3, column=5)
+        createAcc.grid(row=4, column=5)
         text1.grid(row=1, column=0)
         text2.grid(row=2, column=0)
+        
+        # Layout of the login page.
 
+  
+class Calculator(LoginSystem):
+    def __init__(self, master=None, email=None, password=None, userInput=None): # Class attributes needed for Calculator.
+        super().__init__(master, email, password) # Inheriting attributes from LoginSystem class.
+        self.userInput = userInput 
+
+    
+    def calcLayout(self):
+        self.master = Toplevel() # Creating new window.
+        self.master.geometry("450x550")
+        self.master.title("Calculator")
+        large_font = ('Verdana',24)
+        
+        self.userInput = Entry(self.master, font=large_font, relief=SUNKEN)
+
+        Label(self.master, text="\n").grid(row=0, column=5)
+        Label(self.master, text="     ").grid(row=1, column=0)
+        self.userInput.grid(row=1, column=5, pady=20)
+        
+        """ Gridding/layout of page """
 
 if __name__ == "__main__": # Checking if program is in main before running code.
     root = Tk()
@@ -186,7 +230,7 @@ if __name__ == "__main__": # Checking if program is in main before running code.
     login = LoginSystem(root)
     login.layout()
     
-    root.mainloop()
+    root.mainloop() # Keep root window open while the program is running.
 
 
 

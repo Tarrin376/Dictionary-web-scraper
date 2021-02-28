@@ -265,15 +265,12 @@ class Calculator(LoginSystem):
 class ToDoList:
     @staticmethod
     def submitNote(title, note, window):
-        label = Label(window, text="")
-        if title.get() != "" or note.get() != "":
-            label.config(text="Note submitted!")
-            label.grid(row=5, column=1)
+        if title.get() != "" and note.get() != "":
+            Label(window, text="Note added to library!").grid(row=5, column=1)
         else:
-            label.config(text="Title or note is blank!")
-            label.grid(row=5, column=1)
+            messagebox.showwarning("Warning!", "Title or note is blank!")
 
-  
+
     def listLayout(self):
         self.window = Toplevel()
         self.window.geometry("530x550")

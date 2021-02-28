@@ -29,9 +29,6 @@ class Menu: # Main menu of GUI class.
         menu.title("Menu")
         menu.configure(background='#D7D4D4')
 
-        logout = Button(menu, text="LOG OUT", command=lambda: logout_user(Email), font=("Arial", 8, 'bold'), bg='#959292', fg="white") # Calling logout function.
-        logout.grid(row=1, column=0)
-
         email_data = Label(menu, text=f"Logged in as: {Email}", font=("Arial", 12))
         welcome = Label(menu, text="Welcome!", font=("Arial", 25))
         subheading = Label(menu, text="Chose an option below:\n\n\n\n\n", font=("Arial", 15))
@@ -41,19 +38,24 @@ class Menu: # Main menu of GUI class.
 
         Sets = Menu()
         calculator = Calculator() # Assigning calculator variable to Calculator class call so a function can be called from a different class.
+        toDo = ToDoList()
+        dictionary = Dictionary()
         settings = Button(menu, text="Settings", command=lambda: Sets.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white")
         self.calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white", command=lambda: calculator.calcLayout())
-
-        self.toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white")
-        self.dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white")
+        self.toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white", command=lambda: toDo.listLayout())
+        self.dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", command=lambda: dictionary.dictLayout())
+        self.contact = Button(menu, text="Contact Me", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white")
+        logout = Button(menu, text="LOG OUT", height=7, width=20, font=("Arial", 12, 'bold'), bg='#959292', activebackground="#D0CBCB", fg="white", command=lambda: logout_user(Email)) # Calling logout function.
 
         email_data.grid(row=0, column=0)
         welcome.grid(row=2, column=4)
         subheading.grid(row=3, column=4)
-        settings.grid(row=6, column=4)
+        settings.grid(row=6, column=2)
         self.calculator.grid(row=4, column=2)
         self.toDoList.grid(row=4, column=4)
         self.dictionary.grid(row=4, column=6)
+        self.contact.grid(row=6, column=4)
+        logout.grid(row=6, column=6)
 
         """
         Gridding layout for the titles and entries.
@@ -86,19 +88,17 @@ class LoginSystem:
     
     def createAccount(self, Email, Pass, Pass2, createRoot):
         if re.search(r'^[a-zA-|0-9]+[\._]?[a-zA-Z0-9]+[@]\w+[.]\w{2,3}$', Email.get()):
-
             password_validator = [
                 (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()), # Lambda expressions to check if passwords meet the conditions.
                 (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get())
             ] 
-
             if all(condition == True for condition in password_validator):
                 if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7: # Using email regular expression to check validity of email.
                     if Pass2.get() == Pass.get(): # Making sure that the re-entered password matches the original.
                         try:
-                            connect = sqlite3.connect("Details.db")
+                            connect = sqlite3.connect("Info.db")
                             csr = connect.cursor()
-                            csr.execute("INSERT INTO Details VALUES (?, ?)", (Email.get(), Pass.get())) # Adding new email and password to database.
+                            csr.execute("INSERT INTO information VALUES (?, ?)", (Email.get(), Pass.get())) # Adding new email and password to database.
                             connect.commit() # Committing changes to database and closing the connection.
                             connect.close() # Closing the connection.
                             createRoot.destroy()
@@ -147,15 +147,14 @@ class LoginSystem:
 
     def loginPress(self, Email, Pass, Master):
         try:
-            connect = sqlite3.connect("Details.db") # Connecting to SQLite3 database.
+            connect = sqlite3.connect("Info.db") # Connecting to SQLite3 database.
             csr = connect.cursor()
         except ConnectionError as error: # Throw exception if user is unable to connect to database.
             return f"ERROR {error}"
             exit()
 
-        csr.execute("SELECT * FROM Details") # Grabs all of the data from the db.
+        csr.execute("SELECT * FROM information") # Grabs all of the data from the db.
         data = csr.fetchall() # Stored tuples of all the data in db in variable.
-
         for i in data: # Looping through db.
             if i[0] == Email.get() and i[1] == Pass.get(): # Checking if details exist or not.
                 loggedEmail = copy(Email.get())
@@ -206,7 +205,7 @@ class LoginSystem:
 class Calculator(LoginSystem):
     def __init__(self, master=None, email=None, password=None, userInput=None): # Class attributes needed for Calculator.
         super().__init__(master, email, password) # Inheriting attributes from LoginSystem class.
-        self.userInput = userInput 
+        self.userInput = userInput
 
     
     def calcLayout(self):
@@ -232,12 +231,11 @@ class Calculator(LoginSystem):
         Num7 = Button(self.master, text="7", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
         Num8 = Button(self.master, text="8", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
         Num9 = Button(self.master, text="9", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Mult = Button(self.master, text="*", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
+        Mult = Button(self.master, text="x", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
         Num0 = Button(self.master, text="0", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
         Dec = Button(self.master, text=".", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
         Equal = Button(self.master, text="=", width=13, height=4, font=("Arial", 11, 'bold'), bg="#E62E59", activebackground="#D0CBCB", fg="white")
         Div = Button(self.master, text="/", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
-
 
         self.userInput.grid(row=1, column=0, columnspan=10, pady=20)
         C.grid(row=2, column=0, sticky="nsew")
@@ -263,6 +261,48 @@ class Calculator(LoginSystem):
         
         """ Gridding/layout of page """
 
+
+class ToDoList:
+    @staticmethod
+    def submitNote(title, note, window):
+        label = Label(window, text="")
+        if title.get() != "" or note.get() != "":
+            label.config(text="Note submitted!")
+            label.grid(row=5, column=1)
+        else:
+            label.config(text="Title or note is blank!")
+            label.grid(row=5, column=1)
+
+  
+    def listLayout(self):
+        self.window = Toplevel()
+        self.window.geometry("530x550")
+        self.window.title("To Do List")
+        large_font = ('Courier',29)
+        
+        titleText = Label(self.window, text="Title", font=("Calibri", 15))
+        titleEntry = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 10))
+        noteText = Label(self.window, text="Note", font=("Calibri", 15))
+        noteEntry = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 10))
+        submit = Button(self.window, text="Add Note", command=lambda: ToDoList.submitNote(titleEntry, noteEntry, self.window))
+
+        Label(self.window, text="To Do List", font=large_font).grid(row=1, column=1, pady=50)
+        titleText.grid(row=2, column=0, pady=50)
+        titleEntry.grid(row=2, column=1, ipadx=150, ipady=10, pady=20)
+        noteText.grid(row=3, column=0)
+        noteEntry.grid(row=3, column=1, ipadx=150, ipady=60)
+        submit.grid(row=4, column=1)
+
+
+class Dictionary:
+    def __init__(self, definition=None, word=None):
+        self.definition = definition
+        self.word = word
+    
+
+    def dictLayout(self):
+        print("yo")
+        
 
 if __name__ == "__main__": # Checking if program is in main before running code.
     root = Tk()

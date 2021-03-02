@@ -1,8 +1,15 @@
-from tkinter import *
-from tkinter import messagebox, ttk
-import sqlite3
-import re
-from copy import copy
+while True:
+    try:
+        from tkinter import *
+        from tkinter import messagebox, ttk
+        import sqlite3, re
+        from copy import copy
+        break
+    except ImportError as err:
+        print(f"ERROR! {err}")
+        user_input = input("Would you like to try again?: ")
+        if user_input.lower() == "no":
+            quit()
 
 
 class Menu: # Main menu of GUI class.
@@ -13,7 +20,6 @@ class Menu: # Main menu of GUI class.
 
 
     def settings(self):
-        global window
         window = Toplevel() # Opens new window when settings button is clicked.
         window.geometry("300x220") # Size of window.
         window.configure(background='#D7D4D4')
@@ -66,10 +72,7 @@ class Menu: # Main menu of GUI class.
         
 
         def logout_user(email):
-            global window
             menu.destroy() # Closes the main menu window.
-            if "window" == root.state():
-                window.destroy() # Closes the settings window if open.
             
             logout = Toplevel()
             logout.geometry("430x100")
@@ -107,11 +110,11 @@ class LoginSystem:
                     else:
                         Label(createRoot, text="Passwords do not match").grid(row=10, column=5) # If passwords dont match.
                 else:
-                    Label(createRoot, 
-                        text="Need one special character & length > 7"
-                    ).grid(row=10, column=5)
+                    Label(createRoot, text="Needs one special character").grid(row=10, column=5)
+                    Label(createRoot, text="Or please use at least 7 characters").grid(row=11, column=5)
             else:
-                Label(createRoot, text="Uppercase characters and numbers needed").grid(row=10, column=5)
+                Label(createRoot, text="Password needs numbers").grid(row=10, column=5)
+                Label(createRoot, text="Or password needs uppercase characters").grid(row=11, column=5)
         else:
             messagebox.showwarning("Warning!", "Invalid Email") # Warning box if the email does not match the regex expression.
 
@@ -264,30 +267,56 @@ class Calculator(LoginSystem):
 
 class ToDoList:
     @staticmethod
-    def submitNote(title, note, window):
-        if title.get() != "" and note.get() != "":
+    def Notes(note, add_note_window):
+        notes = Toplevel()
+        notes.geometry("1400x750")
+        notes.title("Current notes")
+        notes.configure(background="#E6E680")
+        large_font = ('Courier',10)
+        add_note_window.destroy()
+        
+        notesList, griddedvals = [], []
+        with open('notes.txt', 'r') as f:
+            for line in f:
+                notesList.append(line)
+
+        for i in notesList:
+            if i not in griddedvals:
+                noteVal = Text(notes)
+                noteVal.insert(END, f"Note {notesList.index(i)}:\n{i}")
+                noteVal.configure(font=large_font, background="#FAF7A4", width=25, height=10)
+                noteVal.grid(row=0, column=notesList.index(i))
+                griddedvals.append(i)
+
+        def close(window):
+            window.destroy()
+
+
+    @staticmethod
+    def submitNote(note, window):
+        if note.get() != "":
             Label(window, text="Note added to library!").grid(row=5, column=1)
+            with open('notes.txt', 'a') as f:
+                f.write(f"{note.get()}\n")
+                f.close()
+            Button(window, text="View notes", command=lambda: ToDoList.Notes(note.get(), window)).grid(row=6, column=1)
         else:
             messagebox.showwarning("Warning!", "Title or note is blank!")
 
 
     def listLayout(self):
         self.window = Toplevel()
-        self.window.geometry("530x550")
+        self.window.geometry("530x400")
         self.window.title("To Do List")
         large_font = ('Courier',29)
         
-        titleText = Label(self.window, text="Title", font=("Calibri", 15))
-        titleEntry = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 10))
         noteText = Label(self.window, text="Note", font=("Calibri", 15))
         noteEntry = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 10))
-        submit = Button(self.window, text="Add Note", command=lambda: ToDoList.submitNote(titleEntry, noteEntry, self.window))
+        submit = Button(self.window, text="Add Note", command=lambda: ToDoList.submitNote(noteEntry, self.window))
 
         Label(self.window, text="To Do List", font=large_font).grid(row=1, column=1, pady=50)
-        titleText.grid(row=2, column=0, pady=50)
-        titleEntry.grid(row=2, column=1, ipadx=150, ipady=10, pady=20)
         noteText.grid(row=3, column=0)
-        noteEntry.grid(row=3, column=1, ipadx=150, ipady=60)
+        noteEntry.grid(row=3, column=1, ipadx=150, ipady=60, pady=10)
         submit.grid(row=4, column=1)
 
 

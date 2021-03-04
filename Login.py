@@ -63,9 +63,11 @@ class Menu: # Main menu of GUI class.
         self.contact.grid(row=6, column=4)
         logout.grid(row=6, column=6)
 
-        """
+
+        """""""""""""""""""""""""""""""""""""""""
         Gridding layout for the titles and entries.
-        """
+        """""""""""""""""""""""""""""""""""""""""
+
 
         def close_logout(window):
             window.destroy() # Close the logout confirmation message page.
@@ -141,6 +143,7 @@ class LoginSystem:
         Label(create, text="Re-Enter pass").grid(row=6, column=5)
         Label(create, text="       ").grid(row=0, column=0)
 
+
         """
             Code for creating the layout of the create account page. 
             E.g. Email entry, pass entry etc.
@@ -206,8 +209,8 @@ class LoginSystem:
 
   
 class Calculator(LoginSystem):
-    def __init__(self, master=None, email=None, password=None, userInput=None): # Class attributes needed for Calculator.
-        super().__init__(master, email, password) # Inheriting attributes from LoginSystem class.
+    def __init__(self, master=None, userInput=None): # Class attributes needed for Calculator.
+        super().__init__(master) # Inheriting attributes from LoginSystem class.
         self.userInput = userInput
 
     
@@ -271,26 +274,54 @@ class ToDoList:
         notes = Toplevel()
         notes.geometry("1400x750")
         notes.title("Current notes")
-        notes.configure(background="#E6E680")
-        large_font = ('Courier',10)
+        notes.configure(background="#83B7C1")
         add_note_window.destroy()
         
-        notesList, griddedvals = [], []
+        notesList = []
         with open('notes.txt', 'r') as f:
-            for line in f:
-                notesList.append(line)
+            lines = f.readlines()
+            for line in lines:
+                if line not in notesList:
+                    notesList.append(line)
 
         for i in notesList:
-            if i not in griddedvals:
-                noteVal = Text(notes)
-                noteVal.insert(END, f"Note {notesList.index(i)}:\n{i}")
-                noteVal.configure(font=large_font, background="#FAF7A4", width=25, height=10)
-                noteVal.grid(row=0, column=notesList.index(i))
-                griddedvals.append(i)
+            noteVal = Text(notes)
+            noteVal.insert(END, f"Note {notesList.index(i)}:\n{i}")
+            noteVal.configure(font=('Courier',10), background="#FAFAFA", width=25, height=10)
+            noteVal.grid(row=2, column=notesList.index(i))
+            
+            curNote = Button(notes, text="Remove Note", pady=10, command=lambda: removeNote(i, 'notes.txt', notesList, notes))
+            curNote.grid(row=3, column=notesList.index(i))
+
+        Label(notes, text="\n\n\n").grid(row=0, column=1)
+        Label(notes, text="\t\t\t\t\t\t").grid(row=0, column=7)
+
+        title = Label(notes, text="To Do List", font=("Courier", 25))
+        close = Button(notes, text="Close", command=lambda: close(notes))
+
+        title.grid(row=0, column=7)
+        close.grid(row=0, column=0, pady=10)
+
 
         def close(window):
             window.destroy()
 
+
+        def removeNote(currentNote, notesFile, noteLi, window):
+            with open(notesFile, 'r') as f:
+                lines = f.readlines()
+            with open(notesFile, 'w') as f:
+                for line in lines:
+                    if line != currentNote:
+                        f.write(line)
+            
+            for note in noteLi:
+                if note == currentNote:
+                    note.replace(note, '')
+            
+            curWindow = window
+            Label(curWindow, text="Note has been deleted").grid(row=1, column=0)
+            
 
     @staticmethod
     def submitNote(note, window):
@@ -338,6 +369,3 @@ if __name__ == "__main__": # Checking if program is in main before running code.
     login.layout()
     
     root.mainloop() # Keep root window open while the program is running.
-
-
-

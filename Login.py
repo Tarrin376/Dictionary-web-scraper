@@ -4,6 +4,8 @@ while True:
         from tkinter import messagebox, ttk
         import sqlite3, re
         from copy import copy
+        from bs4 import BeautifulSoup
+        import requests
         break
     except ImportError as err:
         print(f"ERROR! {err}")
@@ -352,14 +354,70 @@ class ToDoList:
 
 
 class Dictionary:
-    def __init__(self, definition=None, word=None):
+    def __init__(self, window=None, master=None, definition=None, word=None):
+        self.master = master
         self.definition = definition
         self.word = word
+        self.window = window
     
 
-    def dictLayout(self):
-        print("yo")
+    def webScraper(self, master, word):
+        headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
+        try:
+            source = requests.get(f'https://dictionary.cambridge.org/dictionary/english/{word}', headers=headers).text
+            soup = BeautifulSoup(source, 'lxml')
+        except requests.exceptions.HTTPError as err1:
+            print(f"HTTP ERROR: {err1}")
+        except requests.exceptions.ConnectionError as err2:
+            print(f"ERROR CONNECTING: {err2}")
+        except requests.exceptions.Timeout as err3:
+            print(f"TIMEOUT ERROR: {err3}")
+        except requests.exceptions.RequestException as err4:
+            print(f"ERROR: {err4}")
         
+        for dictionary in soup.find_all('body'):
+            try:
+                defClass = dictionary.find('div', class_="def ddef_d db").get_text()
+                Label(master, text="Definition:", font=("Courier", 12)).grid(row=7, column=0)
+                Label(master, text=f"{defClass}\n\n", font=("Roboto", 13, "bold")).grid(row=7, column=1)
+            except TypeError as err:
+                print(f"ERROR! {err}")
+            except AttributeError:
+                Label(master, text="Error:", font=("Courier", 12)).grid(row=9, column=0)
+                Label(master, text="This word is not a valid word in the dictionary", font=("Robot", 13, "bold")).grid(row=9, column=1)
+
+
+    def checkInput(self, window, userWord, dictClass):
+        if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', userWord) or re.search(r'[0-9]', userWord):
+            Label(window, text="Word cannot have special characters or numbers!").grid(row=4, column=1, pady=10)
+        elif userWord == "":
+            Label(window, text="Please enter a valid word").grid(row=4, column=1, pady=10)
+        else:
+            Label(window, text=f"Searching for word...", font=("Roboto", 10, "bold")).grid(row=5, column=1, pady=20)
+            dictClass.webScraper(window, userWord)
+            
+
+    def dictLayout(self):
+        self.window = Toplevel()
+        self.window.title("Dictionary")
+        self.window.geometry("1200x700")
+        self.window.configure(background="#ABC0C7")
+
+        check = Dictionary()
+
+        title = Label(self.window, text="Dictionary\n\n\n", font=("Courier", 25))
+        word = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 20))
+        definition = Button(self.window, text="Definition", font=("Courier", 10), command=lambda: check.checkInput(self.window, word.get(), check))
+
+        Label(self.window, text="\t\t\t\t").grid(row=0, column=0)
+        Label(self.window, text="Word:", font=("Courier", 12)).grid(row=2, column=0)
+        Label(self.window, text="This dictionary scrapes the web to find the definition of your chosen word!", font=("Courier", 12)).grid(row=0, column=1)
+        Label(self.window, text="\t\t\t\t").grid(row=0, column=2)
+
+        title.grid(row=0, column=1)
+        word.grid(row=2, column=1, ipadx=50, ipady=50, pady=10, sticky="nsew")
+        definition.grid(row=3, column=1, pady=10, ipady=20, ipadx=20)
+
 
 if __name__ == "__main__": # Checking if program is in main before running code.
     root = Tk()
@@ -369,3 +427,5 @@ if __name__ == "__main__": # Checking if program is in main before running code.
     login.layout()
     
     root.mainloop() # Keep root window open while the program is running.
+
+

@@ -2,10 +2,9 @@ while True:
     try:
         from tkinter import *
         from tkinter import messagebox, ttk
-        import sqlite3, re
+        import sqlite3, re, requests
         from copy import copy
         from bs4 import BeautifulSoup
-        import requests
         break
     except ImportError as err:
         print(f"ERROR! {err}")
@@ -15,10 +14,11 @@ while True:
 
 
 class Menu: # Main menu of GUI class.
-    def __init__(self, calculator=None, toDoList=None, dictionary=None): # Class Attributes needed for the Menu.
+    def __init__(self, calculator=None, toDoList=None, dictionary=None, contact=None): # Class Attributes needed for the Menu.
         self.calcualtor = calculator
         self.toDoList = toDoList
         self.dictionary = dictionary
+        self.contact = contact
 
 
     def settings(self):
@@ -48,11 +48,12 @@ class Menu: # Main menu of GUI class.
         calculator = Calculator() # Assigning calculator variable to Calculator class call so a function can be called from a different class.
         toDo = ToDoList()
         dictionary = Dictionary()
+        contact = ContactMe()
         settings = Button(menu, text="Settings", command=lambda: Sets.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white")
         self.calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white", command=lambda: calculator.calcLayout())
         self.toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white", command=lambda: toDo.listLayout())
         self.dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", command=lambda: dictionary.dictLayout())
-        self.contact = Button(menu, text="Contact Me", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white")
+        self.contact = Button(menu, text="Contact Me", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", command=lambda: contact.contactLayout())
         logout = Button(menu, text="LOG OUT", height=7, width=20, font=("Arial", 12, 'bold'), bg='#959292', activebackground="#D0CBCB", fg="white", command=lambda: logout_user(Email)) # Calling logout function.
 
         email_data.grid(row=0, column=0)
@@ -165,6 +166,7 @@ class LoginSystem:
         data = csr.fetchall() # Stored tuples of all the data in db in variable.
         for i in data: # Looping through db.
             if i[0] == Email.get() and i[1] == Pass.get(): # Checking if details exist or not.
+                global loggedEmail
                 loggedEmail = copy(Email.get())
                 Email.delete(0, END)
                 Pass.delete(0, END)
@@ -196,16 +198,16 @@ class LoginSystem:
         self.password = Entry(self.master, width=40)
         loginButton = Button(self.master, image=self.loginImg, command=lambda: self.loginPress(self.email, self.password, self.master), relief=FLAT)
         createAcc = Button(self.master, image=self.img2, command=lambda: self.createAccLayout(), relief=FLAT)
-        text1 = Label(self.master, text="\nEmail:\n", font=("Roboto Medium", 12))
-        text2 = Label(self.master, text="\nPassword:\n", font=("Roboto Medium", 12))
+        emailText = Label(self.master, text="\nEmail:\n", font=("Roboto Medium", 12))
+        passText = Label(self.master, text="\nPassword:\n", font=("Roboto Medium", 12))
 
         title.grid(row=0, column=5)
         self.email.grid(row=1, column=5) 
         self.password.grid(row=2, column=5)
         loginButton.grid(row=3, column=5)
         createAcc.grid(row=4, column=5)
-        text1.grid(row=1, column=0)
-        text2.grid(row=2, column=0)
+        emailText.grid(row=1, column=0)
+        passText.grid(row=2, column=0)
         
         # Layout of the login page.
 
@@ -304,10 +306,8 @@ class ToDoList:
         title.grid(row=0, column=7)
         close.grid(row=0, column=0, pady=10)
 
-
         def close(window):
             window.destroy()
-
 
         def removeNote(currentNote, notesFile, noteLi, window):
             with open(notesFile, 'r') as f:
@@ -334,7 +334,7 @@ class ToDoList:
                 f.close()
             Button(window, text="View notes", command=lambda: ToDoList.Notes(note.get(), window)).grid(row=6, column=1)
         else:
-            messagebox.showwarning("Warning!", "Title or note is blank!")
+            messagebox.showwarning("Warning!", "Note is blank!")
 
 
     def listLayout(self):
@@ -373,13 +373,16 @@ class Dictionary:
         except requests.exceptions.Timeout as err3:
             print(f"TIMEOUT ERROR: {err3}")
         except requests.exceptions.RequestException as err4:
-            print(f"ERROR: {err4}")
+            print(f"ERROR REQUESTING: {err4}")
         
         for dictionary in soup.find_all('body'):
             try:
                 defClass = dictionary.find('div', class_="def ddef_d db").get_text()
-                Label(master, text="Definition:", font=("Courier", 12)).grid(row=7, column=0)
-                Label(master, text=f"{defClass}\n\n", font=("Roboto", 13, "bold")).grid(row=7, column=1)
+                Label(master, text="Definition:", font=("Courier", 12)).grid(row=7, column=0, pady=20)
+                noteVal = Text(master)
+                noteVal.insert(END, defClass)
+                noteVal.configure(font=('Courier',10), background="#FAFAFA", height=3)
+                noteVal.grid(row=7, column=1)
             except TypeError as err:
                 print(f"ERROR! {err}")
             except AttributeError:
@@ -391,7 +394,8 @@ class Dictionary:
         if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', userWord) or re.search(r'[0-9]', userWord):
             Label(window, text="Word cannot have special characters or numbers!").grid(row=4, column=1, pady=10)
         elif userWord == "":
-            Label(window, text="Please enter a valid word").grid(row=4, column=1, pady=10)
+            Label(window, text="Error:", font=("Courier", 12)).grid(row=9, column=0)
+            Label(window, text="This word is not a valid word in the dictionary", font=("Robot", 13, "bold")).grid(row=9, column=1)
         else:
             Label(window, text=f"Searching for word...", font=("Roboto", 10, "bold")).grid(row=5, column=1, pady=20)
             dictClass.webScraper(window, userWord)
@@ -400,7 +404,7 @@ class Dictionary:
     def dictLayout(self):
         self.window = Toplevel()
         self.window.title("Dictionary")
-        self.window.geometry("1200x700")
+        self.window.geometry("1150x650")
         self.window.configure(background="#ABC0C7")
 
         check = Dictionary()
@@ -417,6 +421,56 @@ class Dictionary:
         title.grid(row=0, column=1)
         word.grid(row=2, column=1, ipadx=50, ipady=50, pady=10, sticky="nsew")
         definition.grid(row=3, column=1, pady=10, ipady=20, ipadx=20)
+
+
+class ContactMe:
+    def __init__(self, master=None, firstName=None, lastName=None, usersEmail=None):
+        self.firstName = firstName
+        self.lastName = lastName
+        self.usersEmail = usersEmail
+    
+
+    def confirmRequest(self, first, last, email, master):
+        if re.search(r'[0-9@_!#$%^&*()<>?/\|}{~:]', first.get()) or re.search(r'[0-9@_!#$%^&*()<>?/\|}{~:]', last.get()):
+            Label(master, text="Invalid first or last name").grid(row=6, column=4, pady=10)
+        elif first.get() == "" or last.get() == "":
+            Label(master, text="All boxes need to be filled out").grid(row=8, column=4, pady=10)
+        else:
+            if email.get() == loggedEmail:
+                Label(master, text="Submit Successful").grid(row=8, column=4, pady=10)
+            else:
+                messagebox.showwarning("Unmatched Email", "Email doesn't matched logged in email")
+    
+
+    def contactLayout(self):
+        self.master = Toplevel()
+        self.master.geometry("630x400")
+        self.master.title("Contact Me")
+        contact = ContactMe()
+        
+        title = Label(self.master, text="Contact Me\n", font=("Courier", 17, "bold"))
+        firstText = Label(self.master, text="First Name: ", font=("Courier", 10))
+        lastText = Label(self.master, text="Last Name: ", font=("Courier", 10))
+        emailText = Label(self.master, text="Confirm Email:", font=("Courier", 10))
+
+        self.firstName = Entry(self.master, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 15))
+        self.lastName = Entry(self.master, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 15))
+        self.usersEmail = Entry(self.master, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 15))
+        confirmRequest = Button(
+            self.master, text="Submit", height=2, width=7, font=("Arial", 9), bg="#EB5757", activebackground="#D0CBCB", 
+            fg="white", command=lambda: contact.confirmRequest(self.firstName, self.lastName, self.usersEmail, self.master)
+        )
+
+        Label(self.master, text="\t\t   ").grid(row=0, column=0)
+
+        title.grid(row=0, column=4)
+        firstText.grid(row=2, column=3, ipady=20)
+        lastText.grid(row=3, column=3, ipady=20)
+        emailText.grid(row=4, column=3, ipady=20)
+        self.firstName.grid(row=2, column=4, ipadx=20, ipady=10, pady=10)
+        self.lastName.grid(row=3, column=4, ipadx=20, ipady=10, pady=10)
+        self.usersEmail.grid(row=4, column=4, ipadx=20, ipady=10, pady=10)
+        confirmRequest.grid(row=5, column=4, ipadx=20, ipady=10, pady=10)
 
 
 if __name__ == "__main__": # Checking if program is in main before running code.

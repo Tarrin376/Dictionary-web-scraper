@@ -1,10 +1,11 @@
 while True:
     try:
         from tkinter import *
-        from tkinter import messagebox, ttk
-        import sqlite3, re, requests
+        from tkinter import messagebox
+        import sqlite3, re, requests, os, smtplib
         from copy import copy
         from bs4 import BeautifulSoup
+        from email.message import EmailMessage
         break
     except ImportError as err:
         print(f"ERROR! {err}")
@@ -19,16 +20,6 @@ class Menu: # Main menu of GUI class.
         self.toDoList = toDoList
         self.dictionary = dictionary
         self.contact = contact
-
-
-    def settings(self):
-        window = Toplevel() # Opens new window when settings button is clicked.
-        window.geometry("300x220") # Size of window.
-        window.configure(background='#D7D4D4')
-        window.title("Settings")
-        
-        title = Label(window, text="Settings", font=("Arial", 20))
-        title.grid(row=1, column=5)
     
 
     def menuLayout(self, Email, password):
@@ -40,16 +31,17 @@ class Menu: # Main menu of GUI class.
         email_data = Label(menu, text=f"Logged in as: {Email}", font=("Arial", 12))
         welcome = Label(menu, text="Welcome!", font=("Arial", 25))
         subheading = Label(menu, text="Chose an option below:\n\n\n\n\n", font=("Arial", 15))
-        Label(menu, text="              ").grid(row=3, column=3)
-        Label(menu, text="              ").grid(row=3, column=5)
-        Label(menu, text="              ").grid(row=5, column=4)
+        Label(menu, text="\t").grid(row=3, column=3)
+        Label(menu, text="\t").grid(row=3, column=5)
+        Label(menu, text="\t").grid(row=5, column=4)
 
-        Sets = Menu()
         calculator = Calculator() # Assigning calculator variable to Calculator class call so a function can be called from a different class.
         toDo = ToDoList()
         dictionary = Dictionary()
         contact = ContactMe()
-        settings = Button(menu, text="Settings", command=lambda: Sets.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white")
+        sets = Settings()
+
+        settings = Button(menu, text="Settings", command=lambda: sets.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white")
         self.calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white", command=lambda: calculator.calcLayout())
         self.toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white", command=lambda: toDo.listLayout())
         self.dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", command=lambda: dictionary.dictLayout())
@@ -111,7 +103,8 @@ class LoginSystem:
                             connect.close() # Closing the connection.
                             createRoot.destroy()
                         except ConnectionError as error:
-                            return f"ERROR {error}"
+                            print(f"ERROR {error}")
+                            return
                     else:
                         Label(createRoot, text="Passwords do not match").grid(row=10, column=5) # If passwords dont match.
                 else:
@@ -128,6 +121,11 @@ class LoginSystem:
         create = Toplevel()
         create.title("Create Account")
         create.geometry("295x310") # Setting window size for create account page.
+
+        try:
+            create.configure(background=var.get())
+        except NameError:
+            pass
 
         title = Label(create, text="\nCreate Account\n", font=("Arial", 20))
         new_email = Entry(create, width=40)
@@ -159,11 +157,12 @@ class LoginSystem:
             connect = sqlite3.connect("Info.db") # Connecting to SQLite3 database.
             csr = connect.cursor()
         except ConnectionError as error: # Throw exception if user is unable to connect to database.
-            return f"ERROR {error}"
-            exit()
+            print(f"ERROR {error}")
+            return
 
         csr.execute("SELECT * FROM information") # Grabs all of the data from the db.
         data = csr.fetchall() # Stored tuples of all the data in db in variable.
+
         for i in data: # Looping through db.
             if i[0] == Email.get() and i[1] == Pass.get(): # Checking if details exist or not.
                 global loggedEmail
@@ -186,6 +185,11 @@ class LoginSystem:
     def layout(self):
         self.master.title("Login")
         self.master.geometry("450x500")
+
+        try:
+            self.master.configure(background=var.get())
+        except NameError:
+            pass
 
         self.img1 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\login.png') 
         self.loginImg = self.img1.subsample(4, 4) 
@@ -342,6 +346,11 @@ class ToDoList:
         self.window.geometry("530x400")
         self.window.title("To Do List")
         large_font = ('Courier',29)
+
+        try:
+            self.window.configure(background=var.get())
+        except NameError:
+            pass
         
         noteText = Label(self.window, text="Note", font=("Calibri", 15))
         noteEntry = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 10))
@@ -367,22 +376,26 @@ class Dictionary:
             source = requests.get(f'https://dictionary.cambridge.org/dictionary/english/{word}', headers=headers).text
             soup = BeautifulSoup(source, 'lxml')
         except requests.exceptions.HTTPError as err1:
-            print(f"HTTP ERROR: {err1}")
+            print(f"HTTP ERROR: \n{err1}")
+            return
         except requests.exceptions.ConnectionError as err2:
-            print(f"ERROR CONNECTING: {err2}")
+            print(f"ERROR CONNECTING: \n{err2}")
+            return
         except requests.exceptions.Timeout as err3:
-            print(f"TIMEOUT ERROR: {err3}")
+            print(f"TIMEOUT ERROR: \n{err3}")
+            return
         except requests.exceptions.RequestException as err4:
-            print(f"ERROR REQUESTING: {err4}")
+            print(f"ERROR REQUESTING: \n{err4}")
+            return
         
         for dictionary in soup.find_all('body'):
             try:
                 defClass = dictionary.find('div', class_="def ddef_d db").get_text()
                 Label(master, text="Definition:", font=("Courier", 12)).grid(row=7, column=0, pady=20)
-                noteVal = Text(master)
-                noteVal.insert(END, defClass)
-                noteVal.configure(font=('Courier',10), background="#FAFAFA", height=3)
-                noteVal.grid(row=7, column=1)
+                definition = Text(master)
+                definition.insert(END, defClass)
+                definition.configure(font=('Courier',10), background="#FAFAFA", height=3)
+                definition.grid(row=7, column=1)
             except TypeError as err:
                 print(f"ERROR! {err}")
             except AttributeError:
@@ -392,7 +405,8 @@ class Dictionary:
 
     def checkInput(self, window, userWord, dictClass):
         if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', userWord) or re.search(r'[0-9]', userWord):
-            Label(window, text="Word cannot have special characters or numbers!").grid(row=4, column=1, pady=10)
+            Label(window, text="Error:", font=("Courier", 12)).grid(row=9, column=0)
+            Label(window, text="This word is not a valid word in the dictionary", font=("Robot", 13, "bold")).grid(row=9, column=1)
         elif userWord == "":
             Label(window, text="Error:", font=("Courier", 12)).grid(row=9, column=0)
             Label(window, text="This word is not a valid word in the dictionary", font=("Robot", 13, "bold")).grid(row=9, column=1)
@@ -404,10 +418,13 @@ class Dictionary:
     def dictLayout(self):
         self.window = Toplevel()
         self.window.title("Dictionary")
-        self.window.geometry("1150x650")
-        self.window.configure(background="#ABC0C7")
-
+        self.window.geometry("1150x600")
         check = Dictionary()
+
+        try:
+            self.window.configure(background=var.get())
+        except NameError:
+            pass
 
         title = Label(self.window, text="Dictionary\n\n\n", font=("Courier", 25))
         word = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 20))
@@ -430,14 +447,33 @@ class ContactMe:
         self.usersEmail = usersEmail
     
 
-    def confirmRequest(self, first, last, email, master):
+    def sendEmail(self, firstName, lastName, emailAdd):
+        EMAIL_ADDRESS = os.environ.get('Gmail Email')
+        EMAIL_PASS = os.environ.get('Gmail Pass')
+
+        EmailMs = EmailMessage()
+        EmailMs['Subject'] = "Contact Request"
+        EmailMs['From'] = EMAIL_ADDRESS
+        EmailMs['To'] = emailAdd
+        EmailMs.set_content(f"""
+        Hello {firstName} {lastName} ({emailAdd}), you have requested to get in contact with me. 
+        If you would like to ask a question, please reply with your question. Thank you!
+        """)
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASS)
+            smtp.send_message(EmailMs)
+    
+
+    def confirmRequest(self, first, last, email, master, contact):
         if re.search(r'[0-9@_!#$%^&*()<>?/\|}{~:]', first.get()) or re.search(r'[0-9@_!#$%^&*()<>?/\|}{~:]', last.get()):
             Label(master, text="Invalid first or last name").grid(row=6, column=4, pady=10)
         elif first.get() == "" or last.get() == "":
-            Label(master, text="All boxes need to be filled out").grid(row=8, column=4, pady=10)
+            Label(master, text="Boxes can't be empty").grid(row=8, column=4, pady=10)
         else:
             if email.get() == loggedEmail:
-                Label(master, text="Submit Successful").grid(row=8, column=4, pady=10)
+                Label(master, text="Submission Successful").grid(row=8, column=4, pady=10)
+                contact.sendEmail(first.get(), last.get(), email.get())
             else:
                 messagebox.showwarning("Unmatched Email", "Email doesn't matched logged in email")
     
@@ -447,6 +483,11 @@ class ContactMe:
         self.master.geometry("630x400")
         self.master.title("Contact Me")
         contact = ContactMe()
+
+        try:
+            self.master.configure(background=var.get())
+        except NameError:
+            pass
         
         title = Label(self.master, text="Contact Me\n", font=("Courier", 17, "bold"))
         firstText = Label(self.master, text="First Name: ", font=("Courier", 10))
@@ -458,7 +499,7 @@ class ContactMe:
         self.usersEmail = Entry(self.master, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 15))
         confirmRequest = Button(
             self.master, text="Submit", height=2, width=7, font=("Arial", 9), bg="#EB5757", activebackground="#D0CBCB", 
-            fg="white", command=lambda: contact.confirmRequest(self.firstName, self.lastName, self.usersEmail, self.master)
+            fg="white", command=lambda: contact.confirmRequest(self.firstName, self.lastName, self.usersEmail, self.master, contact)
         )
 
         Label(self.master, text="\t\t   ").grid(row=0, column=0)
@@ -471,6 +512,36 @@ class ContactMe:
         self.lastName.grid(row=3, column=4, ipadx=20, ipady=10, pady=10)
         self.usersEmail.grid(row=4, column=4, ipadx=20, ipady=10, pady=10)
         confirmRequest.grid(row=5, column=4, ipadx=20, ipady=10, pady=10)
+    
+
+class Settings:
+    def applySettings(self, settingsPage):
+        settingsPage.destroy()
+
+
+    def settings(self):
+        window = Toplevel() # Opens new window when settings button is clicked.
+        window.geometry("300x220") # Size of window.
+        window.configure(background='#D7D4D4')
+        window.title("Settings")
+        sets = Settings()
+        
+        global var
+        var = StringVar()
+        var.set("#f0f0ed")
+        
+        title = Label(window, text="Settings\n", font=("Arial", 20))
+        background = Label(window, text="Background:\t")
+        lightMode = Radiobutton(window, text="\nLight: ", variable=var, value="#F0F0ED")
+        darkMode = Radiobutton(window, text="Dark: \n", variable=var, value="#A8A8A8")
+
+        submitSets = Button(window, text="Apply", command=lambda: sets.applySettings(window))
+
+        title.grid(row=1, column=5)
+        background.grid(row=2, column=0)
+        lightMode.grid(row=3, column=0)
+        darkMode.grid(row=4, column=0)
+        submitSets.grid(row=6, column=5)
 
 
 if __name__ == "__main__": # Checking if program is in main before running code.
@@ -481,5 +552,3 @@ if __name__ == "__main__": # Checking if program is in main before running code.
     login.layout()
     
     root.mainloop() # Keep root window open while the program is running.
-
-

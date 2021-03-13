@@ -6,6 +6,7 @@ while True:
         from copy import copy
         from bs4 import BeautifulSoup
         from email.message import EmailMessage
+        import operator
         break
     except ImportError as err:
         print(f"ERROR! {err}")
@@ -220,42 +221,89 @@ class Calculator(LoginSystem):
     def __init__(self, master=None, userInput=None): # Class attributes needed for Calculator.
         super().__init__(master) # Inheriting attributes from LoginSystem class.
         self.userInput = userInput
-
     
+
+    def calculations(self, entryBox, value):
+        calc = []
+        ops = {
+            "%": operator.mod,
+            "+": operator.add,
+            "-": operator.sub,
+            "*": operator.mul,
+            "/": operator.truediv,
+            "^": operator.pow
+        }
+
+        if value == "=":
+            calc.append(entryBox.get())
+            for j in range(len(calc[0])):
+                if calc[0][j] in ops.keys():
+                    print(ops[calc[0][j]](float(calc[0][:j]), float(calc[0][j+1:])))
+
+        if value not in ops and type(value) == str:
+            if value == "C": entryBox.delete(0, END)
+            if value == "🢠": del calc[0][-1]
+            if value == ".": entryBox.insert(0, value)
+        else:
+            calc.append(value)
+            entryBox.insert(0, value)
+        
+
     def calcLayout(self):
         self.master = Toplevel() # Creating new window.
         self.master.geometry("508x515")
         self.master.title("Calculator")
         self.master.configure(background="#878D98")
         large_font = ('Courier',29)
+        calc = Calculator()
         
-        self.userInput = Entry(self.master, font=large_font, relief=FLAT, justify="right", bg="#878D98", fg="white")
-        C = Button(self.master, text="C", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white")
-        Sqrt = Button(self.master, text="%", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white")
-        Sqr = Button(self.master, text="x²", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white")
-        Mod = Button(self.master, text="🢠", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
-        Num1 = Button(self.master, text="1", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Num2 = Button(self.master, text="2", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Num3 = Button(self.master, text="3", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Add = Button(self.master, text="+", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
-        Num4 = Button(self.master, text="4", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Num5 = Button(self.master, text="6", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Num6 = Button(self.master, text="6", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Minus = Button(self.master, text="-", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
-        Num7 = Button(self.master, text="7", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Num8 = Button(self.master, text="8", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Num9 = Button(self.master, text="9", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Mult = Button(self.master, text="x", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
-        Num0 = Button(self.master, text="0", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
-        Dec = Button(self.master, text=".", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white")
-        Equal = Button(self.master, text="=", width=13, height=4, font=("Arial", 11, 'bold'), bg="#E62E59", activebackground="#D0CBCB", fg="white")
-        Div = Button(self.master, text="/", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white")
+        self.userInput = Entry(self.master, font=large_font, relief=FLAT, bg="#878D98", fg="white")
+        C = Button(self.master, text="C", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "C"))
+        Mod = Button(self.master, text="%", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "%"))
+        Sqr = Button(self.master, text="x²", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "^"))
+        Back = Button(self.master, text="🢠", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "🢠"))
+        Num1 = Button(self.master, text="1", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 1))
+        Num2 = Button(self.master, text="2", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 2))
+        Num3 = Button(self.master, text="3", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 3))
+        Add = Button(self.master, text="+", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "+"))
+        Num4 = Button(self.master, text="4", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 4))
+        Num5 = Button(self.master, text="5", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 5))
+        Num6 = Button(self.master, text="6", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 6))
+        Minus = Button(self.master, text="-", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "-"))
+        Num7 = Button(self.master, text="7", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 7))
+        Num8 = Button(self.master, text="8", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 8))
+        Num9 = Button(self.master, text="9", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 9))
+        Mult = Button(self.master, text="x", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "*"))
+        Num0 = Button(self.master, text="0", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, 0))
+        Dec = Button(self.master, text=".", width=13, height=4, font=("Arial", 11, 'bold'), bg="#525965", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "."))
+        Equal = Button(self.master, text="=", width=13, height=4, font=("Arial", 11, 'bold'), bg="#E62E59", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "="))
+        Div = Button(self.master, text="/", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calc.calculations(self.userInput, "/"))
 
         self.userInput.grid(row=1, column=0, columnspan=10, pady=20)
         C.grid(row=2, column=0, sticky="nsew")
-        Sqrt.grid(row=2, column=1, sticky="nsew")
+        Mod.grid(row=2, column=1, sticky="nsew")
         Sqr.grid(row=2, column=2, sticky="nsew")
-        Mod.grid(row=2, column=3, sticky="nsew")
+        Back.grid(row=2, column=3, sticky="nsew")
         Num1.grid(row=3, column=0, sticky="nsew")
         Num2.grid(row=3, column=1, sticky="nsew")
         Num3.grid(row=3, column=2, sticky="nsew")

@@ -43,11 +43,16 @@ class Menu: # Main menu of GUI class.
         sets = Settings()
 
         settings = Button(menu, text="Settings", command=lambda: sets.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white")
-        self.calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white", command=lambda: calculator.calcLayout())
-        self.toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white", command=lambda: toDo.listLayout())
-        self.dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", command=lambda: dictionary.dictLayout())
-        self.contact = Button(menu, text="Contact Me", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", command=lambda: contact.contactLayout())
-        logout = Button(menu, text="LOG OUT", height=7, width=20, font=("Arial", 12, 'bold'), bg='#959292', activebackground="#D0CBCB", fg="white", command=lambda: logout_user(Email)) # Calling logout function.
+        self.calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white", 
+        command=lambda: calculator.calcLayout())
+        self.toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white", 
+        command=lambda: toDo.listLayout())
+        self.dictionary = Button(menu, text="Dictionary", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", 
+        command=lambda: dictionary.dictLayout())
+        self.contact = Button(menu, text="Contact Me", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", 
+        command=lambda: contact.contactLayout())
+        logout = Button(menu, text="LOG OUT", height=7, width=20, font=("Arial", 12, 'bold'), bg='#959292', activebackground="#D0CBCB", fg="white", 
+        command=lambda: logout_user(Email)) # Calling logout function.
 
         email_data.grid(row=0, column=0)
         welcome.grid(row=2, column=4)
@@ -238,15 +243,20 @@ class Calculator(LoginSystem):
             calc.append(entryBox.get())
             for j in range(len(calc[0])):
                 if calc[0][j] in ops.keys():
-                    print(ops[calc[0][j]](float(calc[0][:j]), float(calc[0][j+1:])))
+                    try: 
+                        entryBox.delete(0, END)
+                        entryBox.insert(END, ops[calc[0][j]](float(calc[0][:j]), float(calc[0][j+1:])))
+                    except ValueError as err:
+                        print(f"INVALID CALCULATION: {err}")
+                        entryBox.delete(0, END)
 
         if value not in ops and type(value) == str:
             if value == "C": entryBox.delete(0, END)
-            if value == "🢠": del calc[0][-1]
-            if value == ".": entryBox.insert(0, value)
+            if value == "🢠": entryBox.delete(0, END)
+            if value == ".": entryBox.insert(END, value)
         else:
             calc.append(value)
-            entryBox.insert(0, value)
+            entryBox.insert(END, value)
         
 
     def calcLayout(self):
@@ -257,7 +267,7 @@ class Calculator(LoginSystem):
         large_font = ('Courier',29)
         calc = Calculator()
         
-        self.userInput = Entry(self.master, font=large_font, relief=FLAT, bg="#878D98", fg="white")
+        self.userInput = Entry(self.master, font=large_font, relief=FLAT, justify="right", bg="#878D98", fg="white")
         C = Button(self.master, text="C", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white", 
         command=lambda: calc.calculations(self.userInput, "C"))
         Mod = Button(self.master, text="%", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white", 
@@ -337,21 +347,18 @@ class ToDoList:
         with open('notes.txt', 'r') as f:
             lines = f.readlines()
             for line in lines:
-                if line not in notesList:
-                    notesList.append(line)
+                if line not in notesList: notesList.append(line)
 
         for i in notesList:
             noteVal = Text(notes)
             noteVal.insert(END, f"Note {notesList.index(i)}:\n{i}")
             noteVal.configure(font=('Courier',10), background="#FAFAFA", width=25, height=10)
             noteVal.grid(row=2, column=notesList.index(i))
-            
             curNote = Button(notes, text="Remove Note", pady=10, command=lambda: removeNote(i, 'notes.txt', notesList, notes))
             curNote.grid(row=3, column=notesList.index(i))
 
         Label(notes, text="\n\n\n").grid(row=0, column=1)
         Label(notes, text="\t\t\t\t\t\t").grid(row=0, column=7)
-
         title = Label(notes, text="To Do List", font=("Courier", 25))
         close = Button(notes, text="Close", command=lambda: close(notes))
 
@@ -366,11 +373,10 @@ class ToDoList:
                 lines = f.readlines()
             with open(notesFile, 'w') as f:
                 for line in lines:
-                    if line != currentNote:
-                        f.write(line)
+                    if line != currentNote: f.write(line)
             
             for note in noteLi:
-                if note == currentNote:
+                if note == currentNote: 
                     note.replace(note, '')
             
             curWindow = window

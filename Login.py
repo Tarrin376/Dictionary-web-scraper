@@ -1,48 +1,67 @@
+""" 
+    Importing all of the packages into the program that are required.
+    Try catch blocks are used to prevent any import error from crashing the program.
+    The user will be prompted a message asking if they would like to try run it again if
+    an exception is thrown.
+"""
 while True:
     try:
         from tkinter import *
         from tkinter import messagebox
-        import sqlite3, re, requests, os, smtplib
+        import sqlite3, re, requests, os, smtplib, operator
         from copy import copy
         from bs4 import BeautifulSoup
         from email.message import EmailMessage
-        import operator
         break
     except ImportError as err:
-        print(f"ERROR! {err}")
+        print(f"IMPORT ERROR: {err}")
         user_input = input("Would you like to try again?: ")
-        if user_input.lower() == "no":
+        if user_input.lower() == "no": 
             quit()
 
 
-class Menu: # Main menu of GUI class.
+class Menu: 
+    """
+    This class defines the layout of the main menu of the application.
+    The class attributes that are needed for the menu are seen below.
+    The menuLayout function is the function that creates the whole GUI for the main menu.
+    """
     def __init__(self, calculator=None, toDoList=None, dictionary=None, contact=None): # Class Attributes needed for the Menu.
         self.calcualtor = calculator
         self.toDoList = toDoList
         self.dictionary = dictionary
         self.contact = contact
     
-
     def menuLayout(self, Email, password):
+        # Customize the window for the main menu interface.
+        # Geometry defines the size of the window.
+        # The menu window has been customized by changing the colour and the title.
+        # This class is has been created to show the menu interface and the window size.
+
         menu = Toplevel()
-        menu.geometry("1200x630") # Size of window.
+        menu.geometry("1200x630") 
         menu.title("Menu")
         menu.configure(background='#D7D4D4')
+        menu.resizable(False, False)
 
         email_data = Label(menu, text=f"Logged in as: {Email}", font=("Arial", 12))
         welcome = Label(menu, text="Welcome!", font=("Arial", 25))
         subheading = Label(menu, text="Chose an option below:\n\n\n\n\n", font=("Arial", 15))
+
         Label(menu, text="\t").grid(row=3, column=3)
         Label(menu, text="\t").grid(row=3, column=5)
         Label(menu, text="\t").grid(row=5, column=4)
-
-        calculator = Calculator() # Assigning calculator variable to Calculator class call so a function can be called from a different class.
-        toDo = ToDoList()
-        dictionary = Dictionary()
-        contact = ContactMe()
-        sets = Settings()
-
-        settings = Button(menu, text="Settings", command=lambda: sets.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white")
+        
+        # Assiging the variables to the calling of the classes so specific functions within the classes can be directly called.
+        calculator, toDo, dictionary, contact, sets = Calculator(), ToDoList(), Dictionary(), ContactMe(), Settings() 
+        
+        """
+        Each of these buttons are created on the main menu's GUI.
+        When the user clicks any of the buttons that are defined below,
+        code in a different class will run so the user can use the features.
+        """
+        settings = Button(menu, text="Settings", command=lambda: sets.settings(), height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", 
+        activebackground="#D0CBCB", fg="white")
         self.calculator = Button(menu, text="Calculator", height=7, width=20, font=("Arial", 12, 'bold'), bg="#137FC7", activebackground="#D0CBCB", fg="white", 
         command=lambda: calculator.calcLayout())
         self.toDoList = Button(menu, text="To Do list", height=7, width=20, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white", 
@@ -52,7 +71,10 @@ class Menu: # Main menu of GUI class.
         self.contact = Button(menu, text="Contact Me", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", 
         command=lambda: contact.contactLayout())
         logout = Button(menu, text="LOG OUT", height=7, width=20, font=("Arial", 12, 'bold'), bg='#959292', activebackground="#D0CBCB", fg="white", 
-        command=lambda: logout_user(Email)) # Calling logout function.
+        command=lambda: logoutUser(Email)) 
+        
+        # Gridding all of the elements that will make up the GUI.
+        # This includes all of the buttons and also a welcome message to the user.
 
         email_data.grid(row=0, column=0)
         welcome.grid(row=2, column=4)
@@ -64,55 +86,75 @@ class Menu: # Main menu of GUI class.
         self.contact.grid(row=6, column=4)
         logout.grid(row=6, column=6)
 
-
-        """""""""""""""""""""""""""""""""""""""""
-        Gridding layout for the titles and entries.
-        """""""""""""""""""""""""""""""""""""""""
-
-
-        def close_logout(window):
-            window.destroy() # Close the logout confirmation message page.
+        def closeLogout(window):
+            # Close the logout confirmation message page.
+            # When the user wants to close the login page window,
+            # the user can click the close button which will destroy
+            # the whole window.
+            window.destroy() 
         
-
-        def logout_user(email):
-            menu.destroy() # Closes the main menu window.
-            
+        def logoutUser(email):
+            """
+            This function will run when the user has decided to log out of the 
+            software program. When the logout button is pressed, the main menu
+            window will close.
+            """
+            # The user can then decide to sign back in as the login window will
+            # always be open throughout the use of the program.
+            menu.destroy() 
             logout = Toplevel()
             logout.geometry("430x100")
+            logout.resizable(False, False)
+
             Label(logout, text="\t").grid(row=0, column=0)
             Label(logout, text="\t").grid(row=1, column=0)
             Label(logout, text="You have successfully logged out!", font=("Arial", 15, 'bold')).grid(row=0, column=1)
-            Button(logout, text="Continue", command=lambda: close_logout(logout)).grid(row=1, column=1)
+            Button(logout, text="Continue", command=lambda: closeLogout(logout)).grid(row=1, column=1)
 
 
 class LoginSystem:
-    def __init__(self, master, email=None, password=None): # Class attributes needed for login system.
+    """
+    This is the LoginSystem class that displays the GUI for logging into the program.
+    The login GUI is the first window that will be displayed when the user runs the
+    program, so they can sign in or create an account
+    """
+    # self.master is the TopLevel() window.
+    # self.email is the entry box that will read the email that the user
+    # inputs into the program.
+    # self.password is the entry box that will read the password that the user inputs.
+     
+    def __init__(self, master, email=None, password=None):
         self.email = email
         self.master = master
         self.password = password
-
     
+    """
+    This function is used to check all of the inputs from the user.
+    Packages such as re are used to validate the user's input through
+    regular expressions.
+    """
     def createAccount(self, Email, Pass, Pass2, createRoot):
         if re.search(r'^[a-zA-|0-9]+[\._]?[a-zA-Z0-9]+[@]\w+[.]\w{2,3}$', Email.get()):
             password_validator = [
-                (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()), # Lambda expressions to check if passwords meet the conditions.
+                (lambda x: True if any(i.isupper() for i in x) else False)(Pass.get()), 
                 (lambda x: True if any(i.isdigit() for i in x) else False)(Pass.get())
             ] 
-            if all(condition == True for condition in password_validator):
-                if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7: # Using email regular expression to check validity of email.
-                    if Pass2.get() == Pass.get(): # Making sure that the re-entered password matches the original.
+            if all(condition == True for condition in password_validator): 
+                if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', Pass.get()) and len(Pass.get()) > 7: 
+                    if Pass2.get() == Pass.get():
                         try:
-                            connect = sqlite3.connect("Info.db")
+                            # Connecting to the DB and inserting the INFO.
+                            connect = sqlite3.connect("Info.db") 
                             csr = connect.cursor()
-                            csr.execute("INSERT INTO information VALUES (?, ?)", (Email.get(), Pass.get())) # Adding new email and password to database.
-                            connect.commit() # Committing changes to database and closing the connection.
-                            connect.close() # Closing the connection.
-                            createRoot.destroy()
-                        except ConnectionError as error:
-                            print(f"ERROR {error}")
+                            csr.execute("INSERT INTO information VALUES (?, ?)", (Email.get(), Pass.get())) 
+                            connect.commit() 
+                            connect.close() 
+                            createRoot.destroy() # Create account window is then destroyed.
+                        except ConnectionError as error: 
+                            print(f"ERROR CONNECTING: {error}")
                             return
                     else:
-                        Label(createRoot, text="Passwords do not match").grid(row=10, column=5) # If passwords dont match.
+                        Label(createRoot, text="Passwords do not match").grid(row=10, column=5)
                 else:
                     Label(createRoot, text="Needs one special character").grid(row=10, column=5)
                     Label(createRoot, text="Or please use at least 7 characters").grid(row=11, column=5)
@@ -120,22 +162,29 @@ class LoginSystem:
                 Label(createRoot, text="Password needs numbers").grid(row=10, column=5)
                 Label(createRoot, text="Or password needs uppercase characters").grid(row=11, column=5)
         else:
-            messagebox.showwarning("Warning!", "Invalid Email") # Warning box if the email does not match the regex expression.
-
-
+            messagebox.showwarning("Warning!", "Invalid Email")
+    
+    """
+    Code for creating the layout of the create account page. 
+    E.g. Email entry, pass entry etc.
+    Assiging rows and columns to each entry.
+    """
     def createAccLayout(self):
         create = Toplevel()
         create.title("Create Account")
-        create.geometry("295x310") # Setting window size for create account page.
+        create.geometry("295x310") 
+        create.resizable(False, False)
 
+        # Change background colour if settings background is changed.
         try:
             create.configure(background=var.get())
         except NameError:
             pass
 
+        # The layout of the create account window so the user can input information into the program.
         title = Label(create, text="\nCreate Account\n", font=("Arial", 20))
         new_email = Entry(create, width=40)
-        new_pass = Entry(create, width=40) # User inputs for creating a new account.
+        new_pass = Entry(create, width=40) 
         new_pass2 = Entry(create, width=40)
         createAcc = Button(create, text="Create Account", command=lambda: self.createAccount(new_email, new_pass, new_pass2, create), bg='#74F3D1')
         
@@ -144,65 +193,71 @@ class LoginSystem:
         new_pass.grid(row=5, column=5)
         new_pass2.grid(row=7, column=5)
         createAcc.grid(row=8, column=5, pady=10)
-
         Label(create, text="Email").grid(row=2, column=5)
         Label(create, text="Password").grid(row=4, column=5)
         Label(create, text="Re-Enter pass").grid(row=6, column=5)
         Label(create, text="       ").grid(row=0, column=0)
 
-
-        """
-            Code for creating the layout of the create account page. 
-            E.g. Email entry, pass entry etc.
-            Assiging rows and columns to each entry.
-        """
-
-
     def loginPress(self, Email, Pass, Master):
+        # Connecting to SQLite3 database.
+        # Throw exception if user is unable to connect to database.
         try:
-            connect = sqlite3.connect("Info.db") # Connecting to SQLite3 database.
+            connect = sqlite3.connect("Info.db") 
             csr = connect.cursor()
-        except ConnectionError as error: # Throw exception if user is unable to connect to database.
+        except ConnectionError as error: 
             print(f"ERROR {error}")
             return
-
-        csr.execute("SELECT * FROM information") # Grabs all of the data from the db.
-        data = csr.fetchall() # Stored tuples of all the data in db in variable.
-
-        for i in data: # Looping through db.
-            if i[0] == Email.get() and i[1] == Pass.get(): # Checking if details exist or not.
+        
+        # Grabs all of the data from the db.
+        csr.execute("SELECT * FROM information")
+        data = csr.fetchall() 
+        
+        """
+        Loops through the SQLite DB to see if the user's email and password
+        matches any of the rows. If the user's information is valid and is found in 
+        the database, the text in the entries will be wiped.
+        """
+        for i in data: 
+            if i[0] == Email.get() and i[1] == Pass.get(): 
                 global loggedEmail
                 loggedEmail = copy(Email.get())
                 Email.delete(0, END)
                 Pass.delete(0, END)
                 menu = Menu()
-                menu.menuLayout(loggedEmail, Pass) # Calling menuLayout function in Menu class.
-                return # Prevent code from continuing after function call.
-                                             
-        Email.delete(0, END) # Make entries blank when login button is pressed.
-        Pass.delete(0, END) 
-          
+                menu.menuLayout(loggedEmail, Pass) 
+                return 
+        
+        # Make entries blank when login button is pressed.
+        Email.delete(0, END) 
+        Pass.delete(0, END)  
         messagebox.showwarning("Warning!", "Email or password is incorrect!")
-
-        connect.commit() # Committing changes to database and closing the connection.
+        
+        # Committing changes to database and closing the connection.
+        connect.commit()
         connect.close()
 
-
     def layout(self):
+        # Creating the size of the login GUI.
+        # The login title has been set to Login.
+        # Each of the pictures that are defined are used for the buttons.
         self.master.title("Login")
         self.master.geometry("450x500")
-
+        self.master.resizable(False, False)
+        self.img1 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\login.png') 
+        self.loginImg = self.img1.subsample(4, 4) 
+        self.img2 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\create.png') 
+        
+        # Changes background colour if settings background is changed.
         try:
             self.master.configure(background=var.get())
         except NameError:
             pass
 
-        self.img1 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\login.png') 
-        self.loginImg = self.img1.subsample(4, 4) 
-        self.img2 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\create.png') 
-
-        """ Images for login and logout buttons """
-
+        """
+        Gridding for the login layout. It has entries such as the email and password
+        entries so the user is able to input information into the program.
+        There is also a createAccount button if the user has not signed up yet
+        """
         title = Label(self.master, text="\nSign in\n", font=("Arial", 25))
         self.email = Entry(self.master, width=40)
         self.password = Entry(self.master, width=40)
@@ -218,38 +273,46 @@ class LoginSystem:
         createAcc.grid(row=4, column=5)
         emailText.grid(row=1, column=0)
         passText.grid(row=2, column=0)
-        
-        # Layout of the login page.
 
-  
+
 class Calculator(LoginSystem):
-    def __init__(self, master=None, userInput=None): # Class attributes needed for Calculator.
-        super().__init__(master) # Inheriting attributes from LoginSystem class.
+    """
+    This calculator class is a simple GUI that allows the user to input
+    numbers and operators to perform mathematical calculations.
+    Self.master is the window of the GUI.
+    """
+    # Class attributes needed for Calculator.
+    # Inheriting attributes from LoginSystem class.
+    def __init__(self, master=None, userInput=None): 
+        super().__init__(master) 
         self.userInput = userInput
     
-
+    # This function performs the mathematical calculations based
+    # on what the user inputs into the program.
+    # Operators are used so the program can understand what the user wants to do.
     def calculations(self, entryBox, value):
-        calc = []
+        calc = [] 
         ops = {
-            "%": operator.mod,
-            "+": operator.add,
-            "-": operator.sub,
-            "*": operator.mul,
-            "/": operator.truediv,
-            "^": operator.pow
+            "%": operator.mod, "+": operator.add,
+            "-": operator.sub, "*": operator.mul,
+            "/": operator.truediv, "^": operator.pow
         }
-
+         
+        # When the user wants to see the result.
+        # Looping through the entry box and outputting the result.
         if value == "=":
             calc.append(entryBox.get())
             for j in range(len(calc[0])):
                 if calc[0][j] in ops.keys():
                     try: 
                         entryBox.delete(0, END)
-                        entryBox.insert(END, ops[calc[0][j]](float(calc[0][:j]), float(calc[0][j+1:])))
+                        entryBox.insert(END, ops[calc[0][j]]
+                        (float(calc[0][:j]), float(calc[0][j+1:])))
                     except ValueError as err:
                         print(f"INVALID CALCULATION: {err}")
                         entryBox.delete(0, END)
-
+        
+        # If the value is not an operator and is not a number.
         if value not in ops and type(value) == str:
             if value == "C": entryBox.delete(0, END)
             if value == "🢠": entryBox.delete(0, END)
@@ -258,12 +321,19 @@ class Calculator(LoginSystem):
             calc.append(value)
             entryBox.insert(END, value)
         
-
     def calcLayout(self):
-        self.master = Toplevel() # Creating new window.
+        """
+        This function is used to create the layout of the calculator's
+        GUI. The size of the window is 508x515 and the title is called 
+        Calculator. 
+        Each of the buttons call the calculation() function so the value
+        can be stored and used later on for mathematical operations.
+        """
+        self.master = Toplevel() 
         self.master.geometry("508x515")
         self.master.title("Calculator")
         self.master.configure(background="#878D98")
+        self.master.resizable(False, False)
         large_font = ('Courier',29)
         calc = Calculator()
         
@@ -330,77 +400,88 @@ class Calculator(LoginSystem):
         Dec.grid(row=6, column=1, sticky="nsew")
         Equal.grid(row=6, column=2, sticky="nsew")
         Div.grid(row=6, column=3, sticky="nsew")
-        
-        """ Gridding/layout of page """
-
+    
 
 class ToDoList:
+    # This is the ToDoList class that allows the user to make and save notes.
+    # The Notes() function is used to display the notes that the user submits
+    # to the program.
+    # Each notes can also be DELETED from the GUI through the __delitem__ dunder method.
     @staticmethod
-    def Notes(note, add_note_window):
-        notes = Toplevel()
-        notes.geometry("1400x750")
-        notes.title("Current notes")
-        notes.configure(background="#83B7C1")
+    def createNotes(note, add_note_window):
+        """
+        The size of the ToDoList window is 1400x750. This function loops over
+        the notes.txt file and displays any of the information on that file.
+        When the Notes window is displayed, the add_note_window is destroyed.
+        """
+        note = Toplevel()
+        note.geometry("1400x750")
+        note.title("Current notes")
+        note.configure(background="#83B7C1")
         add_note_window.destroy()
         
         notesList = []
         with open('notes.txt', 'r') as f:
             lines = f.readlines()
-            for line in lines:
-                if line not in notesList: notesList.append(line)
-
+            [notesList.append(line) for line in lines if line not in notesList]
+        
         for i in notesList:
-            noteVal = Text(notes)
+            # Looping through all of the notes submitted by the user.
+            noteVal = Text(note)
             noteVal.insert(END, f"Note {notesList.index(i)}:\n{i}")
             noteVal.configure(font=('Courier',10), background="#FAFAFA", width=25, height=10)
             noteVal.grid(row=2, column=notesList.index(i))
-            curNote = Button(notes, text="Remove Note", pady=10, command=lambda: removeNote(i, 'notes.txt', notesList, notes))
+            curNote = Button(note, text="Remove Note", pady=10, command=lambda: ToDoList.deleteNote(i, 'notes.txt', notesList, note))
             curNote.grid(row=3, column=notesList.index(i))
+        
+        removeAll = Button(note, text="Remove All Notes", pady=10, command=lambda: ToDoList.deleteAllNotes('notes.txt', notesList, note))
+        title = Label(note, text="To Do List", font=("Courier", 15))
+        removeAll.grid(row=0, column=2)
+        title.grid(row=0, column=0)
+        Label(note, text="\n\n\n").grid(row=0, column=1)
 
-        Label(notes, text="\n\n\n").grid(row=0, column=1)
-        Label(notes, text="\t\t\t\t\t\t").grid(row=0, column=7)
-        title = Label(notes, text="To Do List", font=("Courier", 25))
-        close = Button(notes, text="Close", command=lambda: close(notes))
-
-        title.grid(row=0, column=7)
-        close.grid(row=0, column=0, pady=10)
-
-        def close(window):
-            window.destroy()
-
-        def removeNote(currentNote, notesFile, noteLi, window):
-            with open(notesFile, 'r') as f:
-                lines = f.readlines()
-            with open(notesFile, 'w') as f:
-                for line in lines:
-                    if line != currentNote: f.write(line)
-            
-            for note in noteLi:
-                if note == currentNote: 
-                    note.replace(note, '')
-            
-            curWindow = window
-            Label(curWindow, text="Note has been deleted").grid(row=1, column=0)
-            
-
+    # This function writes the users input into a text file.
+    # The text files content is then displayed on the window.
     @staticmethod
     def submitNote(note, window):
         if note.get() != "":
             Label(window, text="Note added to library!").grid(row=5, column=1)
             with open('notes.txt', 'a') as f:
-                f.write(f"{note.get()}\n")
+                f.write(f"{note.get()}\n") # Writing note to 'notes.txt' file.
                 f.close()
-            Button(window, text="View notes", command=lambda: ToDoList.Notes(note.get(), window)).grid(row=6, column=1)
+            Button(window, text="View notes", command=lambda: ToDoList.createNotes(note.get(), window)).grid(row=6, column=1)
         else:
             messagebox.showwarning("Warning!", "Note is blank!")
+    
+    # This function deletes the note that the user requests to delete.
+    # It will write all of the notes to the 'notes.txt' file.
+    def deleteNote(currentNote, notesFile, noteLi, window):
+        with open(notesFile, 'r') as f:
+            lines = f.readlines()
+            with open(notesFile, 'w') as f:
+                [f.write(line) for line in lines if line != currentNote]
+                [note.replace(note, '') for note in noteLi if note == currentNote]
+        f.close()
 
-
+        curWindow = window
+        Label(curWindow, text="Note has been deleted").grid(row=1, column=0)
+    
+    # Deletes all the contents in the 'notes.txt' file.
+    def deleteAllNotes(notesFile, noteLi, window):
+        noteLi = []
+        with open(notesFile, 'r+') as f:
+            f.truncate(0)
+            f.close()
+    
     def listLayout(self):
+        """The GUI layout of the To Do List"""
         self.window = Toplevel()
         self.window.geometry("530x400")
         self.window.title("To Do List")
+        self.window.resizable(False, False)
         large_font = ('Courier',29)
-
+        
+        # Changes background colour if settings background is changed.
         try:
             self.window.configure(background=var.get())
         except NameError:
@@ -416,19 +497,22 @@ class ToDoList:
         submit.grid(row=4, column=1)
 
 
-class Dictionary:
-    def __init__(self, window=None, master=None, definition=None, word=None):
-        self.master = master
+class Dictionary(object):
+    # self.definition is the definition of the word.
+    # self.window is the GUI window.
+    # word is the user's input - Class variable.
+    word = None
+    def __init__(self, source=None, definition=None):
+        self.source = source
         self.definition = definition
-        self.word = word
-        self.window = window
     
-
+    #The web scraper that scrapes the definition from https://dictionary.cambridge.org/dictionary/english/[example word].
+    #Setting HEADER to FireFox to allow the program to scape the information from the site.
     def webScraper(self, master, word):
         headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
         try:
-            source = requests.get(f'https://dictionary.cambridge.org/dictionary/english/{word}', headers=headers).text
-            soup = BeautifulSoup(source, 'lxml')
+            self.source = requests.get(f'https://dictionary.cambridge.org/dictionary/english/{word}', headers=headers).text
+            soup = BeautifulSoup(self.source, 'lxml')
         except requests.exceptions.HTTPError as err1:
             print(f"HTTP ERROR: \n{err1}")
             return
@@ -442,21 +526,24 @@ class Dictionary:
             print(f"ERROR REQUESTING: \n{err4}")
             return
         
+        # Looping through the HTML of the site to try and find the definition.
+        # Will then print the text of the certain class in the HTML of the site.
         for dictionary in soup.find_all('body'):
             try:
                 defClass = dictionary.find('div', class_="def ddef_d db").get_text()
                 Label(master, text="Definition:", font=("Courier", 12)).grid(row=7, column=0, pady=20)
-                definition = Text(master)
-                definition.insert(END, defClass)
-                definition.configure(font=('Courier',10), background="#FAFAFA", height=3)
-                definition.grid(row=7, column=1)
+                self.definition = Text(master)
+                self.definition.insert(END, defClass)
+                self.definition.configure(font=('Courier',10), background="#FAFAFA", height=3)
+                self.definition.grid(row=7, column=1)
             except TypeError as err:
                 print(f"ERROR! {err}")
             except AttributeError:
+                # If the class cannot be found on the site E.g. INVALID WORD causing HTTP ERROR.
                 Label(master, text="Error:", font=("Courier", 12)).grid(row=9, column=0)
                 Label(master, text="This word is not a valid word in the dictionary", font=("Robot", 13, "bold")).grid(row=9, column=1)
-
-
+    
+    # Checking the user's input to make sure that it is valid.
     def checkInput(self, window, userWord, dictClass):
         if re.search(r'[@_!#$%^&*()<>?/\|}{~:]', userWord) or re.search(r'[0-9]', userWord):
             Label(window, text="Error:", font=("Courier", 12)).grid(row=9, column=0)
@@ -467,40 +554,48 @@ class Dictionary:
         else:
             Label(window, text=f"Searching for word...", font=("Roboto", 10, "bold")).grid(row=5, column=1, pady=20)
             dictClass.webScraper(window, userWord)
-            
 
-    def dictLayout(self):
-        self.window = Toplevel()
-        self.window.title("Dictionary")
-        self.window.geometry("1150x600")
+    @classmethod    
+    def dictLayout(cls):
+        """ Layout of the Dictionary's GUI"""
+        # TopLevel() creates a new window for the online dictionary.
+        window = Toplevel()
+        window.title("Dictionary")
+        window.geometry("1150x600")
+        window.resizable(False, False)
         check = Dictionary()
-
+        
+        # Changes background colour if settings background is changed.
         try:
-            self.window.configure(background=var.get())
+            window.configure(background=var.get())
         except NameError:
             pass
+        
+        # Gridding and adding elements for the GUI.
+        title = Label(window, text="Dictionary\n\n\n", font=("Courier", 25))
+        cls.word = Entry(window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 20))
+        definition = Button(window, text="Definition", font=("Courier", 10), command=lambda: check.checkInput(window, cls.word.get(), check))
 
-        title = Label(self.window, text="Dictionary\n\n\n", font=("Courier", 25))
-        word = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 20))
-        definition = Button(self.window, text="Definition", font=("Courier", 10), command=lambda: check.checkInput(self.window, word.get(), check))
-
-        Label(self.window, text="\t\t\t\t").grid(row=0, column=0)
-        Label(self.window, text="Word:", font=("Courier", 12)).grid(row=2, column=0)
-        Label(self.window, text="This dictionary scrapes the web to find the definition of your chosen word!", font=("Courier", 12)).grid(row=0, column=1)
-        Label(self.window, text="\t\t\t\t").grid(row=0, column=2)
+        Label(window, text="\t\t\t\t").grid(row=0, column=0)
+        Label(window, text="Word:", font=("Courier", 12)).grid(row=2, column=0)
+        Label(window, text="This dictionary scrapes the web to find the definition of your chosen word!", font=("Courier", 12)).grid(row=0, column=1)
+        Label(window, text="\t\t\t\t").grid(row=0, column=2)
 
         title.grid(row=0, column=1)
-        word.grid(row=2, column=1, ipadx=50, ipady=50, pady=10, sticky="nsew")
+        cls.word.grid(row=2, column=1, ipadx=50, ipady=50, pady=10, sticky="nsew")
         definition.grid(row=3, column=1, pady=10, ipady=20, ipadx=20)
 
 
 class ContactMe:
     def __init__(self, master=None, firstName=None, lastName=None, usersEmail=None):
+        self.master = master
         self.firstName = firstName
         self.lastName = lastName
         self.usersEmail = usersEmail
     
-
+    """Function that retrieves the user's name, last name and email"""
+    # It then uses these values to send an email to the user.
+    # This is done through the use of an environment variable (sender of the email)
     def sendEmail(self, firstName, lastName, emailAdd):
         EMAIL_ADDRESS = os.environ.get('Gmail Email')
         EMAIL_PASS = os.environ.get('Gmail Pass')
@@ -513,12 +608,15 @@ class ContactMe:
         Hello {firstName} {lastName} ({emailAdd}), you have requested to get in contact with me. 
         If you would like to ask a question, please reply with your question. Thank you!
         """)
-
+        
+        # Requesting an SMTP protocol to Gmail.
+        # Signing into Gmail using Environment variables.
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
             smtp.login(EMAIL_ADDRESS, EMAIL_PASS)
             smtp.send_message(EmailMs)
     
-
+    # Checking the user's input to make sure that the details are valid.
+    # Using REGEX to validate inputs.
     def confirmRequest(self, first, last, email, master, contact):
         if re.search(r'[0-9@_!#$%^&*()<>?/\|}{~:]', first.get()) or re.search(r'[0-9@_!#$%^&*()<>?/\|}{~:]', last.get()):
             Label(master, text="Invalid first or last name").grid(row=6, column=4, pady=10)
@@ -531,18 +629,22 @@ class ContactMe:
             else:
                 messagebox.showwarning("Unmatched Email", "Email doesn't matched logged in email")
     
-
     def contactLayout(self):
+        # Layout of the contact page GUI.
+        # self.master is the window that is set to 630x400.
         self.master = Toplevel()
         self.master.geometry("630x400")
         self.master.title("Contact Me")
+        self.master.resizable(False, False)
         contact = ContactMe()
-
+        
+        # Changes background colour if settings background is changed.
         try:
             self.master.configure(background=var.get())
         except NameError:
             pass
         
+        # Creating the elements for the contact page.
         title = Label(self.master, text="Contact Me\n", font=("Courier", 17, "bold"))
         firstText = Label(self.master, text="First Name: ", font=("Courier", 10))
         lastText = Label(self.master, text="Last Name: ", font=("Courier", 10))
@@ -555,9 +657,9 @@ class ContactMe:
             self.master, text="Submit", height=2, width=7, font=("Arial", 9), bg="#EB5757", activebackground="#D0CBCB", 
             fg="white", command=lambda: contact.confirmRequest(self.firstName, self.lastName, self.usersEmail, self.master, contact)
         )
-
+        
+        # Gridding the elements to the contact page GUI.
         Label(self.master, text="\t\t   ").grid(row=0, column=0)
-
         title.grid(row=0, column=4)
         firstText.grid(row=2, column=3, ipady=20)
         lastText.grid(row=3, column=3, ipady=20)
@@ -569,28 +671,37 @@ class ContactMe:
     
 
 class Settings:
+    """
+    This class allows the user to modify the GUI to their needs
+    applySettings() function closes the window of the settings page
+    when requested
+    """
     def applySettings(self, settingsPage):
         settingsPage.destroy()
 
-
     def settings(self):
-        window = Toplevel() # Opens new window when settings button is clicked.
-        window.geometry("300x220") # Size of window.
+        # Opens new window when settings button is clicked.
+        # Size of window is 300x220.
+        window = Toplevel() 
+        window.geometry("300x220") 
         window.configure(background='#D7D4D4')
         window.title("Settings")
+        window.resizable(False, False)
         sets = Settings()
         
+        # Value that will be used to change the background colour.
         global var
         var = StringVar()
         var.set("#f0f0ed")
         
+        # Creating the elements for the settings GUI.
         title = Label(window, text="Settings\n", font=("Arial", 20))
         background = Label(window, text="Background:\t")
         lightMode = Radiobutton(window, text="\nLight: ", variable=var, value="#F0F0ED")
         darkMode = Radiobutton(window, text="Dark: \n", variable=var, value="#A8A8A8")
-
         submitSets = Button(window, text="Apply", command=lambda: sets.applySettings(window))
-
+        
+        # Gridding the elements for the settings GUI.
         title.grid(row=1, column=5)
         background.grid(row=2, column=0)
         lightMode.grid(row=3, column=0)
@@ -601,8 +712,6 @@ class Settings:
 if __name__ == "__main__": # Checking if program is in main before running code.
     root = Tk()
     root.geometry("370x330") # Setting size of the window.
-
     login = LoginSystem(root)
     login.layout()
-    
     root.mainloop() # Keep root window open while the program is running.

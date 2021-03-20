@@ -283,14 +283,16 @@ class Calculator(LoginSystem):
     """
     # Class attributes needed for Calculator.
     # Inheriting attributes from LoginSystem class.
-    def __init__(self, master=None, userInput=None): 
+    def __init__(self, master=None, userInput=None, count=0): 
         super().__init__(master) 
         self.userInput = userInput
+        self.count = count
     
     # This function performs the mathematical calculations based
     # on what the user inputs into the program.
     # Operators are used so the program can understand what the user wants to do.
     def calculations(self, entryBox, value):
+        self.count += 1
         calc = [] 
         ops = {
             "%": operator.mod, "+": operator.add,
@@ -308,14 +310,18 @@ class Calculator(LoginSystem):
                         entryBox.delete(0, END)
                         entryBox.insert(END, ops[calc[0][j]]
                         (float(calc[0][:j]), float(calc[0][j+1:])))
-                    except ValueError as err:
-                        print(f"INVALID CALCULATION: {err}")
-                        entryBox.delete(0, END)
+                    except ValueError:
+                        entryBox.insert(END, "INVALID CALCULATION")
         
         # If the value is not an operator and is not a number.
         if value not in ops and type(value) == str:
             if value == "C": entryBox.delete(0, END)
-            if value == "🢠": entryBox.delete(0, END)
+            if value == "🢠": 
+                entryBox.delete(self.count - 2, self.count - 1)
+                if self.count == 1:
+                    entryBox.delete(0, END)
+                else:
+                    self.count = self.count - 2
             if value == ".": entryBox.insert(END, value)
         else:
             calc.append(value)
@@ -342,7 +348,7 @@ class Calculator(LoginSystem):
         command=lambda: calc.calculations(self.userInput, "C"))
         Mod = Button(self.master, text="%", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white", 
         command=lambda: calc.calculations(self.userInput, "%"))
-        Sqr = Button(self.master, text="x²", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white", 
+        Sqr = Button(self.master, text="x^y", width=13, height=4, font=("Arial", 11, 'bold'), bg="#7B818D", activebackground="#D0CBCB", fg="white", 
         command=lambda: calc.calculations(self.userInput, "^"))
         Back = Button(self.master, text="🢠", width=13, height=4, font=("Arial", 11, 'bold'), bg="#262E3D", activebackground="#D0CBCB", fg="white", 
         command=lambda: calc.calculations(self.userInput, "🢠"))
@@ -449,7 +455,9 @@ class ToDoList:
             with open('notes.txt', 'a') as f:
                 f.write(f"{note.get()}\n") # Writing note to 'notes.txt' file.
                 f.close()
-            Button(window, text="View notes", command=lambda: ToDoList.createNotes(note.get(), window)).grid(row=6, column=1)
+            Button(window, text="View notes", height=2, width=10, font=("Arial", 12, 'bold'), bg="#9B5AFD", 
+            activebackground="#D0CBCB", fg="white", 
+            command=lambda: ToDoList.createNotes(note.get(), window)).grid(row=6, column=1, pady=5)
         else:
             messagebox.showwarning("Warning!", "Note is blank!")
     
@@ -461,7 +469,7 @@ class ToDoList:
             with open(notesFile, 'w') as f:
                 [f.write(line) for line in lines if line != currentNote]
                 [note.replace(note, '') for note in noteLi if note == currentNote]
-        f.close()
+            f.close()
 
         curWindow = window
         Label(curWindow, text="Note has been deleted").grid(row=1, column=0)
@@ -476,7 +484,7 @@ class ToDoList:
     def listLayout(self):
         """The GUI layout of the To Do List"""
         self.window = Toplevel()
-        self.window.geometry("530x400")
+        self.window.geometry("575x475")
         self.window.title("To Do List")
         self.window.resizable(False, False)
         large_font = ('Courier',29)
@@ -488,13 +496,15 @@ class ToDoList:
             pass
         
         noteText = Label(self.window, text="Note", font=("Calibri", 15))
-        noteEntry = Entry(self.window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 10))
-        submit = Button(self.window, text="Add Note", command=lambda: ToDoList.submitNote(noteEntry, self.window))
+        noteEntry = Entry(self.window, relief=SUNKEN, bg="#ECFFFF", fg="#6B6B6B", font=("Calibri", 13, 'bold'))
+        submit = Button(self.window, text="Add Note", height=2, width=10, font=("Arial", 12, 'bold'), bg="#9B5AFD", 
+        activebackground="#D0CBCB", fg="white", 
+        command=lambda: ToDoList.submitNote(noteEntry, self.window))
 
         Label(self.window, text="To Do List", font=large_font).grid(row=1, column=1, pady=50)
         noteText.grid(row=3, column=0)
         noteEntry.grid(row=3, column=1, ipadx=150, ipady=60, pady=10)
-        submit.grid(row=4, column=1)
+        submit.grid(row=4, column=1, pady=10)
 
 
 class Dictionary(object):
@@ -573,8 +583,9 @@ class Dictionary(object):
         
         # Gridding and adding elements for the GUI.
         title = Label(window, text="Dictionary\n\n\n", font=("Courier", 25))
-        cls.word = Entry(window, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 20))
-        definition = Button(window, text="Definition", font=("Courier", 10), command=lambda: check.checkInput(window, cls.word.get(), check))
+        cls.word = Entry(window, relief=SUNKEN, bg="#ECFFFF", fg="#6B6B6B", font=("Calibri", 20))
+        definition = Button(window, text="Definition", height=2, width=10, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white", 
+        command=lambda: check.checkInput(window, cls.word.get(), check))
 
         Label(window, text="\t\t\t\t").grid(row=0, column=0)
         Label(window, text="Word:", font=("Courier", 12)).grid(row=2, column=0)
@@ -650,12 +661,12 @@ class ContactMe:
         lastText = Label(self.master, text="Last Name: ", font=("Courier", 10))
         emailText = Label(self.master, text="Confirm Email:", font=("Courier", 10))
 
-        self.firstName = Entry(self.master, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 15))
-        self.lastName = Entry(self.master, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 15))
-        self.usersEmail = Entry(self.master, relief=SUNKEN, bg="#878D98", fg="white", font=("Calibri", 15))
+        self.firstName = Entry(self.master, relief=SUNKEN, bg="#ECFFFF", fg="#6B6B6B", font=("Calibri", 15))
+        self.lastName = Entry(self.master, relief=SUNKEN, bg="#ECFFFF", fg="#6B6B6B", font=("Calibri", 15))
+        self.usersEmail = Entry(self.master, relief=SUNKEN, bg="#ECFFFF", fg="#6B6B6B", font=("Calibri", 15))
         confirmRequest = Button(
-            self.master, text="Submit", height=2, width=7, font=("Arial", 9), bg="#EB5757", activebackground="#D0CBCB", 
-            fg="white", command=lambda: contact.confirmRequest(self.firstName, self.lastName, self.usersEmail, self.master, contact)
+            self.master, text="Submit", height=2, width=10, font=("Arial", 12, 'bold'), bg="#9B5AFD", activebackground="#D0CBCB", fg="white",
+            command=lambda: contact.confirmRequest(self.firstName, self.lastName, self.usersEmail, self.master, contact)
         )
         
         # Gridding the elements to the contact page GUI.

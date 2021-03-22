@@ -1,8 +1,8 @@
 """ 
     Importing all of the packages into the program that are required.
     Try catch blocks are used to prevent any import error from crashing the program.
-    The user will be prompted a message asking if they would like to try run it again if
-    an exception is thrown.
+    The user will be prompted with a message asking if they would like to try run it again if 
+    an import exception is thrown.
 """
 while True:
     try:
@@ -314,6 +314,7 @@ class Calculator(LoginSystem):
                         entryBox.insert(END, "INVALID CALCULATION")
         
         # If the value is not an operator and is not a number.
+        # self.count is the length of the value in the entry box.
         if value not in ops and type(value) == str:
             if value == "C": entryBox.delete(0, END)
             if value == "🢠": 
@@ -423,8 +424,13 @@ class ToDoList:
         note = Toplevel()
         note.geometry("1400x750")
         note.title("Current notes")
-        note.configure(background="#83B7C1")
         add_note_window.destroy()
+
+        # Changes background colour if settings background is changed.
+        try:
+            note.configure(background=var.get())
+        except NameError:
+            pass
         
         notesList = []
         with open('notes.txt', 'r') as f:
@@ -436,15 +442,20 @@ class ToDoList:
             noteVal = Text(note)
             noteVal.insert(END, f"Note {notesList.index(i)}:\n{i}")
             noteVal.configure(font=('Courier',10), background="#FAFAFA", width=25, height=10)
-            noteVal.grid(row=2, column=notesList.index(i))
-            curNote = Button(note, text="Remove Note", pady=10, command=lambda: ToDoList.deleteNote(i, 'notes.txt', notesList, note))
-            curNote.grid(row=3, column=notesList.index(i))
+            noteVal.grid(row=2, column=notesList.index(i), padx=5)
         
         removeAll = Button(note, text="Remove All Notes", pady=10, command=lambda: ToDoList.deleteAllNotes('notes.txt', notesList, note))
+        removeNote = Entry(note, font=("Courier", 12), bg="#878D98", fg="white")
         title = Label(note, text="To Do List", font=("Courier", 15))
-        removeAll.grid(row=0, column=2)
-        title.grid(row=0, column=0)
+        removeNoteSubmit = Button(note, text="Remove", height=3, width=12, font=("Arial", 9, 'bold'), bg="#9B5AFD", 
+        activebackground="#D0CBCB", fg="white", command=lambda: ToDoList.deleteNote(removeNote.get(), 'notes.txt', notesList, note))
+
+        removeAll.grid(row=0, column=0)
+        title.grid(row=7, column=0, pady=10)
+        removeNote.grid(row=9, column=0)
+        removeNoteSubmit.grid(row=10, column=0, pady=7)
         Label(note, text="\n\n\n").grid(row=0, column=1)
+        Label(note, text="Remove Note (number): ").grid(row=8, column=0)
 
     # This function writes the users input into a text file.
     # The text files content is then displayed on the window.
@@ -455,6 +466,7 @@ class ToDoList:
             with open('notes.txt', 'a') as f:
                 f.write(f"{note.get()}\n") # Writing note to 'notes.txt' file.
                 f.close()
+            note.delete(0, END)
             Button(window, text="View notes", height=2, width=10, font=("Arial", 12, 'bold'), bg="#9B5AFD", 
             activebackground="#D0CBCB", fg="white", 
             command=lambda: ToDoList.createNotes(note.get(), window)).grid(row=6, column=1, pady=5)
@@ -463,16 +475,20 @@ class ToDoList:
     
     # This function deletes the note that the user requests to delete.
     # It will write all of the notes to the 'notes.txt' file.
-    def deleteNote(currentNote, notesFile, noteLi, window):
+    def deleteNote(noteNumber, notesFile, noteLi, window):
+        curWindow = window
         with open(notesFile, 'r') as f:
             lines = f.readlines()
-            with open(notesFile, 'w') as f:
-                [f.write(line) for line in lines if line != currentNote]
-                [note.replace(note, '') for note in noteLi if note == currentNote]
-            f.close()
-
-        curWindow = window
-        Label(curWindow, text="Note has been deleted").grid(row=1, column=0)
+            try:
+                if int(noteNumber) < len(noteLi):
+                    with open(notesFile, 'w') as f:
+                        [f.write(noteLi[line]) for line in range(len(noteLi)) if line != int(noteNumber)]
+                        [noteLi[note] == '' for note in range(len(noteLi)) if note == int(noteNumber)]
+                    Label(curWindow, text="Note has been deleted", font=("Roboto", 12)).grid(row=1, column=0)
+                else:
+                    Label(curWindow, text="Invalid note number", font=("Roboto", 12)).grid(row=11, column=0)
+            except ValueError:
+                Label(curWindow, text="Invalid note number", font=("Roboto", 12)).grid(row=11, column=0)
     
     # Deletes all the contents in the 'notes.txt' file.
     def deleteAllNotes(notesFile, noteLi, window):
@@ -544,7 +560,7 @@ class Dictionary(object):
                 Label(master, text="Definition:", font=("Courier", 12)).grid(row=7, column=0, pady=20)
                 self.definition = Text(master)
                 self.definition.insert(END, defClass)
-                self.definition.configure(font=('Courier',10), background="#FAFAFA", height=3)
+                self.definition.configure(font=('Roboto',12), background="#FAFAFA", height=4)
                 self.definition.grid(row=7, column=1)
             except TypeError as err:
                 print(f"ERROR! {err}")
@@ -637,6 +653,9 @@ class ContactMe:
             if email.get() == loggedEmail:
                 Label(master, text="Submission Successful").grid(row=8, column=4, pady=10)
                 contact.sendEmail(first.get(), last.get(), email.get())
+                first.delete(0, END)
+                last.delete(0, END)
+                email.delete(0, END)
             else:
                 messagebox.showwarning("Unmatched Email", "Email doesn't matched logged in email")
     

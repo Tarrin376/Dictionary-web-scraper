@@ -2,8 +2,6 @@
 
 ### I am a college student programmer, trying to improve my skills in multiple languages. :man_student:
 - :technologist: I'm currently doing a computing course at college.
-- :video_game: I like to play games in my spare time.
-
 
 ### Languages and Tools that i use:
 

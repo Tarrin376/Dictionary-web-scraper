@@ -1,8 +1,5 @@
 ### Hello, my name is Tarrin - Known as Tarrin376 on GitHub! :wave:
 
-### I am a college student programmer, trying to improve my skills in multiple languages. :man_student:
-- :technologist: I'm currently doing a computing course at college.
-
 ### Languages and Tools that i use:
 
 <img align="left" alt="Visual Studio Code" width="26px" src="https://raw.githubusercontent.com/github/explore/80688e429a7d4ef2fca1e82350fe8e3517d3494d/topics/visual-studio-code/visual-studio-code.png" />

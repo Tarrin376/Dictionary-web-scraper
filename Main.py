@@ -13,6 +13,7 @@ while True:
         from bs4 import BeautifulSoup
         from email.message import EmailMessage
         break
+      
     except ImportError as err:
         print(f"IMPORT ERROR: {err}")
         user_input = input("Would you like to try again?: ")
@@ -32,7 +33,7 @@ class Menu:
         self.dictionary = dictionary
         self.contact = contact
     
-    def menuLayout(self, Email, password):
+    def menuLayout(self, Email):
         # Customize the window for the main menu interface.
         # Geometry defines the size of the window.
         # The menu window has been customized by changing the colour and the title.
@@ -71,7 +72,7 @@ class Menu:
         self.contact = Button(menu, text="Contact Me", height=7, width=20, font=("Arial", 12, 'bold'), bg="#EB5757", activebackground="#D0CBCB", fg="white", 
         command=lambda: contact.contactLayout())
         logout = Button(menu, text="LOG OUT", height=7, width=20, font=("Arial", 12, 'bold'), bg='#959292', activebackground="#D0CBCB", fg="white", 
-        command=lambda: logoutUser(Email)) 
+        command=lambda: logoutUser()) 
         
         # Gridding all of the elements that will make up the GUI.
         # This includes all of the buttons and also a welcome message to the user.
@@ -93,7 +94,7 @@ class Menu:
             # the whole window.
             window.destroy() 
         
-        def logoutUser(email):
+        def logoutUser():
             """
             This function will run when the user has decided to log out of the 
             software program. When the logout button is pressed, the main menu
@@ -198,7 +199,7 @@ class LoginSystem:
         Label(create, text="Re-Enter pass").grid(row=6, column=5)
         Label(create, text="       ").grid(row=0, column=0)
 
-    def loginPress(self, Email, Pass, Master):
+    def loginPress(self, Email, Pass):
         # Connecting to SQLite3 database.
         # Throw exception if user is unable to connect to database.
         try:
@@ -224,7 +225,7 @@ class LoginSystem:
                 Email.delete(0, END)
                 Pass.delete(0, END)
                 menu = Menu()
-                menu.menuLayout(loggedEmail, Pass) 
+                menu.menuLayout(loggedEmail) 
                 return 
         
         # Make entries blank when login button is pressed.
@@ -243,9 +244,9 @@ class LoginSystem:
         self.master.title("Login")
         self.master.geometry("450x500")
         self.master.resizable(False, False)
-        self.img1 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\login.png') 
+        self.img1 = PhotoImage(file='assets/images/log-in(2).png') 
         self.loginImg = self.img1.subsample(4, 4) 
-        self.img2 = PhotoImage(file='C:\\Users\\Spec\\Pictures\\Camera Roll\\create.png') 
+        self.img2 = PhotoImage(file='assets/images/signup(4).png') 
         
         # Changes background colour if settings background is changed.
         try:
@@ -261,7 +262,7 @@ class LoginSystem:
         title = Label(self.master, text="\nSign in\n", font=("Arial", 25))
         self.email = Entry(self.master, width=40)
         self.password = Entry(self.master, width=40)
-        loginButton = Button(self.master, image=self.loginImg, command=lambda: self.loginPress(self.email, self.password, self.master), relief=FLAT)
+        loginButton = Button(self.master, image=self.loginImg, command=lambda: self.loginPress(self.email, self.password), relief=FLAT)
         createAcc = Button(self.master, image=self.img2, command=lambda: self.createAccLayout(), relief=FLAT)
         emailText = Label(self.master, text="\nEmail:\n", font=("Roboto Medium", 12))
         passText = Label(self.master, text="\nPassword:\n", font=("Roboto Medium", 12))
@@ -444,7 +445,7 @@ class ToDoList:
             noteVal.configure(font=('Courier',10), background="#FAFAFA", width=25, height=10)
             noteVal.grid(row=2, column=notesList.index(i), padx=5)
         
-        removeAll = Button(note, text="Remove All Notes", pady=10, command=lambda: ToDoList.deleteAllNotes('notes.txt', notesList, note))
+        removeAll = Button(note, text="Remove All Notes", pady=10, command=lambda: ToDoList.deleteAllNotes('notes.txt'))
         removeNote = Entry(note, font=("Courier", 12), bg="#878D98", fg="white")
         title = Label(note, text="To Do List", font=("Courier", 15))
         removeNoteSubmit = Button(note, text="Remove", height=3, width=12, font=("Arial", 9, 'bold'), bg="#9B5AFD", 
@@ -491,8 +492,7 @@ class ToDoList:
                 Label(curWindow, text="Invalid note number", font=("Roboto", 12)).grid(row=11, column=0)
     
     # Deletes all the contents in the 'notes.txt' file.
-    def deleteAllNotes(notesFile, noteLi, window):
-        noteLi = []
+    def deleteAllNotes(notesFile):
         with open(notesFile, 'r+') as f:
             f.truncate(0)
             f.close()
@@ -557,9 +557,10 @@ class Dictionary(object):
         for dictionary in soup.find_all('body'):
             try:
                 defClass = dictionary.find('div', class_="def ddef_d db").get_text()
+                definition = f"{defClass[0].upper()} {defClass[1:-2]}."
                 Label(master, text="Definition:", font=("Courier", 12)).grid(row=7, column=0, pady=20)
                 self.definition = Text(master)
-                self.definition.insert(END, defClass)
+                self.definition.insert(END, definition)
                 self.definition.configure(font=('Roboto',12), background="#FAFAFA", height=4)
                 self.definition.grid(row=7, column=1)
             except TypeError as err:

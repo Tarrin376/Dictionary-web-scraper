@@ -5,6 +5,10 @@
   :point_right: Web Scaper Dictionary, contact me page, To Do List and a calculator 
 - Project finished :stopwatch:
 
+![tk-app](https://github.com/Tarrin376/Dictionary-web-scraper/assets/73310079/8ab69298-b9ce-4986-a02b-f518c2129ce7)
+![image](https://github.com/Tarrin376/Dictionary-web-scraper/assets/73310079/fef936f6-8a4c-4470-9a0a-4a433e5fb84b)
+![image](https://github.com/Tarrin376/Dictionary-web-scraper/assets/73310079/30064d53-7ac7-42dc-bf5a-32f576dda530)
+
 ### Setting up the project locally
 
 1. Clone this project
